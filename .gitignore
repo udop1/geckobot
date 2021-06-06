@@ -1,0 +1,5 @@
+# Modules and Packages
+node_modules/
+
+# Miscellaneous
+config.json
