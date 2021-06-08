@@ -11,17 +11,19 @@ module.exports = {
         const messageOwner = message.author.id;
 
         try {
-            const findReminders = await Reminders.findAll({attributes: ['reminder_id', 'reminder', 'start_time', 'end_duration'], where: {username: messageOwner}, order: ['end_duration']});
+            const findReminders = await Reminders.findAll({attributes: ['reminder_id', 'reminder', 'start_time', 'end_duration', 'message_url'], where: {username: messageOwner}, order: ['end_duration']});
             const nthAmount = 9; //How many reminders per page (max per embed: 25)
             var reminderArrayID = findReminders.map(t => t.reminder_id);
             var reminderArrayReminder = findReminders.map(t => t.reminder);
             var reminderArrayStart = findReminders.map(t => t.start_time);
             var reminderArrayEnd = findReminders.map(t => t.end_duration);
+            var reminderArrayURL = findReminders.map(t => t.message_url);
             
             var splitArrayID = new Array(Math.ceil(reminderArrayID.length / nthAmount)).fill().map(_ => reminderArrayID.splice(0, nthAmount));
             var splitArrayReminder = new Array(Math.ceil(reminderArrayReminder.length / nthAmount)).fill().map(_ => reminderArrayReminder.splice(0, nthAmount));
             var splitArrayStart = new Array(Math.ceil(reminderArrayStart.length / nthAmount)).fill().map(_ => reminderArrayStart.splice(0, nthAmount));
             var splitArrayEnd = new Array(Math.ceil(reminderArrayEnd.length / nthAmount)).fill().map(_ => reminderArrayEnd.splice(0, nthAmount));
+            var splitArrayURL = new Array(Math.ceil(reminderArrayURL.length / nthAmount)).fill().map(_ => reminderArrayURL.splice(0, nthAmount));
 
             console.log(splitArrayID);
             var reminderUser = await message.client.users.cache.get(messageOwner);
@@ -54,7 +56,7 @@ module.exports = {
                         var startTime = startDate + '/' + startMonth + '/' + startYear + ' at ' + startHour + ':' + startMin + ':' + startSec;
                         var endTime = endDate + '/' + endMonth + '/' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec;
 
-                        embeddedReminder[i].addFields({name: `ID: ${splitArrayID[i][j]}`, value: `Reminder: ${splitArrayReminder[i][j]}\nStart: ${startTime}\nEnd: ${endTime}`, inline: true});
+                        embeddedReminder[i].addFields({name: `ID: ${splitArrayID[i][j]}`, value: `Reminder: ${splitArrayReminder[i][j]}\nStart: ${startTime}\nEnd: ${endTime}\n**[Original Message](${splitArrayURL[i][j]})**`, inline: true});
                     }
                     message.reply(embeddedReminder[i]);
                 }

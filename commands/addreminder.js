@@ -145,6 +145,7 @@ module.exports = {
                 start_time: startTime,
                 end_duration: endTime,
                 channel_in: channelIn,
+                message_url: message.url,
             });
 
 
@@ -157,6 +158,7 @@ module.exports = {
             var endMin = ('0' + dateObject.getMinutes()).substr(-2);
             var endSec = ('0' + dateObject.getSeconds()).substr(-2);
 
+            //message.reply(message.url);
             return message.reply('Your reminder for '+endDate+' '+endMonth+' '+endYear+' at '+endHour+':'+endMin+':'+endSec+' has been set!');
         }
         catch (error) {
