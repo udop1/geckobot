@@ -70,6 +70,10 @@ var Reminders = sequelize.define('tbl_Reminders', {
         type: Sequelize.TEXT,
         allowNull: false,
     },
+    message_url: {
+        type: Sequelize.TEXT,
+        allowNull: false,
+    },
 });
 module.exports.Reminders = Reminders;
 module.exports.binance = binance;
@@ -85,7 +89,7 @@ client.on('ready', () => { //Once client is ready
 
     setInterval(async function() { //Check reminders
         var currentTime = new Date().getTime() / 1000;
-        var finishedReminders = await Reminders.findOne({attributes: ['reminder_id', 'username', 'reminder', 'start_time', 'channel_in'], group: ['end_duration'], having: {end_duration: {[Op.lte]: currentTime}}}); //currentTime >= end_duration
+        var finishedReminders = await Reminders.findOne({attributes: ['reminder_id', 'username', 'reminder', 'start_time', 'channel_in', 'message_url'], group: ['end_duration'], having: {end_duration: {[Op.lte]: currentTime}}}); //currentTime >= end_duration
         
         try {
             var reminderUser = await client.users.fetch(finishedReminders.username);
@@ -102,10 +106,11 @@ client.on('ready', () => { //Once client is ready
 
             var embedReminder = new Discord.MessageEmbed()
             .setColor('#0099ff')
-            .setTitle('Your Reminder:')
             .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
-            .setDescription(finishedReminders.reminder)
-            .addField('\u200b', '\u200b')
+            .addFields(
+                {name: 'Your Reminder:', value: `${finishedReminders.reminder}\n`},
+                {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`}
+            )
             .setFooter('Time Set')
             .setTimestamp(time);
 
