@@ -150,7 +150,7 @@ function main(message) {
     } else {
         var time = relativeresolution(timedata)
     }
-    return ([time, content])
+    return ([Number(time), content])
 }
 //x[0] is unixtime for reminder to play
 //x[1] is the message content
