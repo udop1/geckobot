@@ -8,6 +8,17 @@ This is a Discord.js bot that was created for my Discord server
 - Mass delete messages
 
 
+## Upcoming
+- Slash Commands
+
+
+## Dependencies
+- Node.js
+- Discord.js
+- Sequelize
+- Binance API (OPTIONAL)
+
+
 ## Usage
 #### !addreminder
 This command allows you to set a reminder. Some examples of how you can use this command are:
@@ -44,14 +55,3 @@ This command allows you to mass delete messages. Some examples of how you can us
 !purge 23
 !remove 12
 ```
-
-
-## Upcoming
-- Slash Commands
-
-
-## Dependencies
-- Node.js
-- Discord.js
-- Sequelize
-- Binance API (OPTIONAL)
