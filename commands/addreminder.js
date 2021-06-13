@@ -174,6 +174,8 @@ x =
 
             const inputtedText = message.content;
             x = main(inputstring)
+            const reminder = x[1]
+            const endTime = x[0]
 
             try {
                 await Reminders.create({
@@ -184,7 +186,6 @@ x =
                     channel_in: channelIn,
                     message_url: message.url,
                 });
-
 
                 var dateObject = new Date(endTime * 1000);
                 var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
