@@ -1,170 +1,206 @@
-const {prefix} = require('../config.json');
+const { prefix } = require('../config.json');
 
-module.exports = {
-    name: 'addreminder',
-    description: `Create a new reminder. The delay for the reminder can be any combination of \'d, h, m, s\' as long as they are in order.\nExample: \`${prefix}addreminder 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\``,
-    guildOnly: true,
-    args: true,
-    usage: '<d h m s> @ <reminder>',
-    cooldown: 5,
-    async execute(message, args) {
-        const {Reminders} = require('../index');
-        var startTime = Math.trunc(new Date().getTime() / 1000);
-        var channelIn = message.channel.id;
+var inputstring = "!addreminder 23:47 13/06/2021@reminder"
 
-        const inputtedText = message.content;
-        var ans = inputtedText.split('');
-        for (i = 0; i < 13; i++) {
-            ans.splice(ans[0], 1);
+function conversionvalue(key) {
+    if (key == "s") {
+        return 1
+    } else if (key == "m") {
+        return 60
+    } else if (key == "h") {
+        return 3600
+    } else if (key == "d") {
+        return 86400
+    } else if (key == "w") {
+        return 604800
+    } else {
+        return 0
+    }
+}
+
+
+function absoluteresolution(timedata) {
+    let currentDate = new Date();
+    let colon = 0;
+    let slashcount = 0
+
+
+    for (let i = 0; i < timedata.length; i++) {
+        if (timedata[i] == "/") {
+            slashcount = slashcount + 1
         }
+    }
 
-        var i;
-        var todelete = [];
-        var daybefore = 0;
-        var hourbefore = 0;
-        var minutebefore = 0;
-        var secondbefore = 0;
-        var days = 0;
-        var hours = 0;
-        var minutes = 0;
-        var seconds = 0;
 
-        for (i = 0; i < ans.length; i++) {
-            if (ans[i] == '@') {
-                var breakpoi = i;
+    for (let i = 0; i < timedata.length; i++) {
+        if (timedata[i] == ":") {
+            colon = i
+        }
+    }
+    var hour = timedata.slice(colon - 2, colon).join("")
+    var minute = timedata.slice(colon + 1, colon + 3).join("")
+
+
+    if (slashcount == 0) {
+        let cDay = currentDate.getDate()
+        let cMonth = String(currentDate.getMonth() + 1)
+        if (cMonth.length == 1) {
+            cMonth = "0" + cMonth
+        }
+        let cYear = currentDate.getFullYear()
+        let totalstring = (cYear + "-" + cMonth + "-" + cDay + "T" + hour + ":" + minute + ":00")
+        return Date.parse(totalstring) / 1000
+    }
+    let firstslash = 0
+
+
+    if (slashcount == 1) {
+        var cYear = currentDate.getFullYear()
+    } else {
+        for (let i = 0; i < timedata.length; i++) {
+            if (timedata[i] == "/") {
+                firstslash = i
             }
         }
-
-        var reminder = ans.slice((breakpoi+1), ans.length);
-        ans = ans.slice(0, breakpoi);
-
-        for (i = 0; i < ans.length; i++) {
-            if (ans[i] == ' ') {
-                todelete.push(i);
-            }
-        }
-
-        todelete.reverse();
-        for (i = 0; i < todelete.length; i++) {
-            ans.splice(todelete[i], 1);
-        }
-
-        for (i = 0; i < ans.length; i++) {
-            if (ans[i] == 'd') {
-                daybefore = i;
-            } else if (ans[i] == 'h') {
-                hourbefore = i;
-            } else if (ans[i] == 'm') {
-                minutebefore = i;
-            } else if (ans[i] == 's') {
-                secondbefore = i;
-            }
-        }
-
-
-        if (daybefore != 0) {
-            days = ans.slice(0, daybefore);
-            if (hourbefore != 0) {
-                hours = ans.slice((daybefore + 1), hourbefore);
-            }
-            if (minutebefore != 0) {
-                if (hourbefore != 0) {
-                    minutes = ans.slice((hourbefore + 1), minutebefore);
-                } else {
-                    minutes = ans.slice((daybefore + 1), minutebefore);
-                }
-            }
-            if (secondbefore != 0) {
-                if (minutebefore != 0) {
-                    seconds = ans.slice((minutebefore + 1), (ans.length - 1));
-                } else if (hourbefore != 0) {
-                    seconds = ans.slice((hourbefore + 1), (ans.length - 1));
-                } else {
-                    seconds = ans.slice((daybefore + 1), (ans.length - 1));
-                }
-            }
-        } else if (hourbefore != 0) {
-            hours = ans.slice(0, hourbefore);
-            if (minutebefore != 0) {
-                minutes = ans.slice((hourbefore + 1), minutebefore);
-            }
-            if (secondbefore != 0) {
-                if (minutebefore != 0) {
-                    seconds = ans.slice((minutebefore + 1), (ans.length - 1));
-                } else {
-                    seconds = ans.slice((hourbefore + 1), (ans.length - 1));
-                }
-            }
-        } else if (minutebefore != 0) {
-            minutes = ans.slice(0, minutebefore);
-            if (secondbefore != 0) {
-                seconds = ans.slice((minutebefore + 1), (ans.length - 1));
-            }
+        var y = (timedata.slice(firstslash + 1))
+        if (y.length == 4) {
+            var year = y.join("")
         } else {
-            seconds = ans.slice(0, secondbefore);
+            let x = String(timedata.slice(firstslash + 1, firstslash + 3).join(""))
+            var year = ("20" + x)
         }
+    }
 
-        if (days != 0) {
-            days = Number.parseInt(days.join(''));
+
+    for (let i = 0; i < timedata.length; i++) {
+        if (timedata[i] == "/") {
+            firstslash = i
+            break
         }
-        if (hours != 0) {
-            hours = Number.parseInt(hours.join(''));
+    }
+
+    var day = (timedata.slice(firstslash - 2, firstslash)).join("")
+    if (day[0] == ' ') {
+        day = "0" + day[1]
+    }
+    var month = (timedata.slice(firstslash + 1, firstslash + 3)).join("")
+
+    if (month[1] == '/') {
+        month = "0" + month[0]
+    }
+    let totalstring = (year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":00")
+    return (Date.parse(totalstring) / 1000)
+}
+
+function relativeresolution(timedata) {
+    var startTime = Math.trunc(new Date().getTime() / 1000);
+    for (let i = 0; i < timedata.length; i++) {
+        if (timedata[i] == " ") {
+            delete timedata[i]
         }
-        if (minutes != 0) {
-            minutes = Number.parseInt(minutes.join(''));
+    }
+
+    const dataloc = new Map()
+    for (let i = 0; i < timedata.length; i++) {
+        if (timedata[i] == "s" || timedata[i] == "m" || timedata[i] == "h" || timedata[i] == "d" || timedata[i] == "w") {
+            dataloc.set(timedata[i], i)
         }
-        if (seconds != 0) {
-            seconds = Number.parseInt(seconds.join(''));
+    }
+    var unixdata = 0
+    var previousval = 0
+    var i = 0
+    for (let entry of dataloc.entries()) {
+        if (i == 0) {
+            let first_val = entry[1]
+            let convval = Number(conversionvalue(entry[0]))
+            let value = Number((timedata.slice(0, first_val)).join(""))
+            unixdata = unixdata + (convval * value)
+            previousval = first_val
+        } else {
+            let val = entry[1]
+            let convval = Number(conversionvalue(entry[0]))
+            let value = Number((timedata.slice(previousval + 1, val).join("")))
+            previousval = val
+
+            unixdata = unixdata + (convval * value)
         }
+        i = i + 1
+    }
+    return ((unixdata + startTime))
+}
 
-        //UNIX converserverrsarsion thing
-        days = days * 24 * 60 * 60;
-        hours = hours * 60 * 60;
-        minutes = minutes * 60;
-
-        var unixTime = Math.trunc(days+hours+minutes+seconds);
-        //console.log(unixTime);
-
-        if (reminder[0] == ' ') {
-            reminder = reminder.slice(1);
+function main(message) {
+    var inputstring = (message.split('')).slice(12)
+    for (let i = 0; i < inputstring.length; i++) {
+        var x = inputstring.length - i - 1 // Checks list in reverse order, so @s in the message arent counted
+        if (inputstring[x] == "@") {
+            var splitpoint = x
         }
-
-        reminder = reminder.join('');
-        //console.log(reminder);
-
-        //message.reply('Start Time:'+startTime+'\nUnix Time:'+unixTime+'\nIts time to stop:'+(unixTime+startTime));
-        var endTime = unixTime + startTime;
-        
-        //startTime = Math.floor(startTime);
-        //endTime = Math.floor(endTime);
-
-        try {
-            await Reminders.create ({
-                username: message.author.id,
-                reminder: reminder,
-                start_time: startTime,
-                end_duration: endTime,
-                channel_in: channelIn,
-                message_url: message.url,
-            });
-
-
-            var dateObject = new Date(endTime * 1000);
-            var endMonths = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-            var endYear = dateObject.getFullYear();
-            var endMonth = endMonths[dateObject.getMonth()];
-            var endDate = ('0' + dateObject.getDate()).substr(-2);
-            var endHour = ('0' + dateObject.getHours()).substr(-2);
-            var endMin = ('0' + dateObject.getMinutes()).substr(-2);
-            var endSec = ('0' + dateObject.getSeconds()).substr(-2);
-
-            //message.reply(message.url);
-            return message.reply('Your reminder for '+endDate+' '+endMonth+' '+endYear+' at '+endHour+':'+endMin+':'+endSec+' has been set!');
+    }
+    var timedata = inputstring.slice(0, splitpoint)
+    var content = inputstring.slice(splitpoint + 1).join("")
+    var absolute = false
+    for (let i = 0; i < timedata.length; i++) {
+        if (timedata[i] == ":") {
+            absolute = true
         }
-        catch (error) {
-            console.log(error);
-            message.reply('Error:\n`'+error+'`');
-        }
-        return message.reply('Something went wrong with adding a reminder.');
-    },
-};
+    }
+    if (absolute == true) {
+        var time = absoluteresolution(timedata)
+    } else {
+        var time = relativeresolution(timedata)
+    }
+    return ([time, content])
+}
+
+x =
+    //x[0] is unixtime for reminder to play
+    //x[1] is the message content
+
+
+
+
+    module.exports = {
+        name: 'addreminder',
+        description: `Create a new reminder. The delay for the reminder can be any combination of \'d, h, m, s\' as long as they are in order.\nExample: \`${prefix}addreminder 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\``,
+        guildOnly: true,
+        args: true,
+        usage: '<d h m s> @ <reminder>',
+        cooldown: 5,
+        async execute(message, args) {
+            const { Reminders } = require('../index');
+            var startTime = Math.trunc(new Date().getTime() / 1000);
+            var channelIn = message.channel.id;
+
+            const inputtedText = message.content;
+            x = main(inputstring)
+
+            try {
+                await Reminders.create({
+                    username: message.author.id,
+                    reminder: reminder,
+                    start_time: startTime,
+                    end_duration: endTime,
+                    channel_in: channelIn,
+                    message_url: message.url,
+                });
+
+
+                var dateObject = new Date(endTime * 1000);
+                var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                var endYear = dateObject.getFullYear();
+                var endMonth = endMonths[dateObject.getMonth()];
+                var endDate = ('0' + dateObject.getDate()).substr(-2);
+                var endHour = ('0' + dateObject.getHours()).substr(-2);
+                var endMin = ('0' + dateObject.getMinutes()).substr(-2);
+                var endSec = ('0' + dateObject.getSeconds()).substr(-2);
+
+                //message.reply(message.url);
+                return message.reply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
+            } catch (error) {
+                console.log(error);
+                message.reply('Error:\n`' + error + '`');
+            }
+            return message.reply('Something went wrong with adding a reminder.');
+        },
+    };
