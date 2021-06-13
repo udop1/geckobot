@@ -167,10 +167,10 @@ function main(message) {
 
 module.exports = {
     name: 'addreminder',
-    description: `Create a new reminder. The delay for the reminder can be any combination of \'d, h, m, s\' as long as they are in order.\nExample: \`${prefix}addreminder 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\``,
+    description: `Create a new reminder. The delay for the reminder can be any combination of \'d, h, m, s\'.\nExample: \`${prefix}addreminder 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\` or \`${prefix}addreminder 17:06 @ Reminder here\` or \`${prefix}addreminder 04:22 22/09/2021 @ Reminder here\``,
     guildOnly: true,
     args: true,
-    usage: '<d h m s> @ <reminder>',
+    usage: '<d h m s> @ <reminder>\n<TT:TT> @ <reminder>\n<TT:TT> <DD/MM/YYYY> @ <reminder>',
     cooldown: 5,
     async execute(message, args) {
         const {Reminders} = require('../index');
