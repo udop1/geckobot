@@ -152,56 +152,54 @@ function main(message) {
     }
     return ([time, content])
 }
-
-x =
-    //x[0] is unixtime for reminder to play
-    //x[1] is the message content
+//x[0] is unixtime for reminder to play
+//x[1] is the message content
 
 
 
 
-    module.exports = {
-        name: 'addreminder',
-        description: `Create a new reminder. The delay for the reminder can be any combination of \'d, h, m, s\' as long as they are in order.\nExample: \`${prefix}addreminder 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\``,
-        guildOnly: true,
-        args: true,
-        usage: '<d h m s> @ <reminder>',
-        cooldown: 5,
-        async execute(message, args) {
-            const { Reminders } = require('../index');
-            var startTime = Math.trunc(new Date().getTime() / 1000);
-            var channelIn = message.channel.id;
+module.exports = {
+    name: 'addreminder',
+    description: `Create a new reminder. The delay for the reminder can be any combination of \'d, h, m, s\' as long as they are in order.\nExample: \`${prefix}addreminder 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\``,
+    guildOnly: true,
+    args: true,
+    usage: '<d h m s> @ <reminder>',
+    cooldown: 5,
+    async execute(message, args) {
+        const { Reminders } = require('../index');
+        var startTime = Math.trunc(new Date().getTime() / 1000);
+        var channelIn = message.channel.id;
 
-            const inputtedText = message.content;
-            x = main(inputstring)
-            const reminder = x[1]
-            const endTime = x[0]
+        const inputtedText = message.content;
+        x = main(inputstring)
+        const reminder = x[1]
+        const endTime = x[0]
 
-            try {
-                await Reminders.create({
-                    username: message.author.id,
-                    reminder: reminder,
-                    start_time: startTime,
-                    end_duration: endTime,
-                    channel_in: channelIn,
-                    message_url: message.url,
-                });
+        try {
+            await Reminders.create({
+                username: message.author.id,
+                reminder: reminder,
+                start_time: startTime,
+                end_duration: endTime,
+                channel_in: channelIn,
+                message_url: message.url,
+            });
 
-                var dateObject = new Date(endTime * 1000);
-                var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-                var endYear = dateObject.getFullYear();
-                var endMonth = endMonths[dateObject.getMonth()];
-                var endDate = ('0' + dateObject.getDate()).substr(-2);
-                var endHour = ('0' + dateObject.getHours()).substr(-2);
-                var endMin = ('0' + dateObject.getMinutes()).substr(-2);
-                var endSec = ('0' + dateObject.getSeconds()).substr(-2);
+            var dateObject = new Date(endTime * 1000);
+            var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+            var endYear = dateObject.getFullYear();
+            var endMonth = endMonths[dateObject.getMonth()];
+            var endDate = ('0' + dateObject.getDate()).substr(-2);
+            var endHour = ('0' + dateObject.getHours()).substr(-2);
+            var endMin = ('0' + dateObject.getMinutes()).substr(-2);
+            var endSec = ('0' + dateObject.getSeconds()).substr(-2);
 
-                //message.reply(message.url);
-                return message.reply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
-            } catch (error) {
-                console.log(error);
-                message.reply('Error:\n`' + error + '`');
-            }
-            return message.reply('Something went wrong with adding a reminder.');
-        },
-    };
+            //message.reply(message.url);
+            return message.reply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
+        } catch (error) {
+            console.log(error);
+            message.reply('Error:\n`' + error + '`');
+        }
+        return message.reply('Something went wrong with adding a reminder.');
+    },
+};
