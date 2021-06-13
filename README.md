@@ -10,6 +10,7 @@ This is a Discord.js bot that was created for my Discord server
 
 ## Upcoming
 - Slash Commands
+- Recurring Reminders
 
 
 ## Dependencies
