@@ -67,7 +67,7 @@ function absoluteresolution(timedata) {
 			var year = (y.slice(0,4)).join("");
 	  	} else{
 			let x = String(timedata.slice(firstslash + 1, firstslash + 3).join(""));
-			var year = ("20" + x);
+			var year = (Math.floor(currentDate.getFullYear()/100) + x);
 	  	}
 	}
 
@@ -89,7 +89,7 @@ function absoluteresolution(timedata) {
 	}
 	//console.log(year);
 	let totalstring = (year + "-" + month + "-" + day + "T" + hour + ":" + minute + ":00");
-	return (Date.parse(totalstring)/1000);
+	return (Date.parse(totalstring) / 1000);
 }
   
 function relativeresolution(timedata) {
