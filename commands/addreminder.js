@@ -198,6 +198,6 @@ module.exports = {
             console.log(error);
             message.reply('Error:\n`' + error + '`');
         }
-        return message.reply('Something went wrong with adding a reminder.');s
+        return message.reply('Something went wrong with adding a reminder.');
     },
 };
