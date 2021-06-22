@@ -11,13 +11,7 @@ This is a Discord.js bot that was created for my Discord server
 ## Upcoming
 - Slash Commands
 - Recurring Reminders
-
-
-## Dependencies
-- Node.js
-- Discord.js
-- Sequelize
-- Binance API (OPTIONAL)
+- Web Interface
 
 
 ## Usage
@@ -41,7 +35,7 @@ This command allows you to delete one of your reminders, where the number would 
 !deletereminder 1172
 ```
 
-#### !getprice (You need the Binance API for this to work)
+#### !getprice
 This command allows you to get the current value of any cryptocurrency on Binance. Some examples of how you can use this command are:
 ```
 !getprice DOGEBUSD
