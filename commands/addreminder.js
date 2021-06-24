@@ -164,7 +164,7 @@ module.exports = {
     usage: '<w d h m s> @ <reminder>\n<TT:TT> @ <reminder>\n<TT:TT> <DD/MM/YYYY> @ <reminder>',
     cooldown: 5,
     async execute(message, args) {
-        const {Reminders} = require('../index');
+        const {Reminders, mysql} = require('../index');
         var channelIn = message.channel.id;
 
 		const inputstring = message.content;
@@ -173,14 +173,19 @@ module.exports = {
         const reminder = x[1];
 
         try {
-            await Reminders.create({
+            /*await Reminders.create({
                 username: message.author.id,
                 reminder: reminder,
                 start_time: startTime,
                 end_duration: endTime,
                 channel_in: channelIn,
                 message_url: message.url,
-            });
+            });*/
+
+			mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, end_duration, channel_in, message_url) VALUES (" + mysql.escape(message.author.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ")", function (error, result) {
+				if (error) throw error;
+				console.log("Reminder Added By: " + message.author.id);
+			});
 
             var dateObject = new Date(endTime * 1000);
             var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
