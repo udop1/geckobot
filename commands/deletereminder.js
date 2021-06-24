@@ -10,17 +10,19 @@ module.exports = {
         
         //const rowCount = await Reminders.destroy({where: {reminder_id: args[0], username: messageOwner}});
         mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(args[0]), function (error, result) {
-            //if (error) throw error;
-            if (error) {
-                console.log(error);
+            if (error) throw error;
+            if (result.affectedRows == 0) {
                 return message.reply('You don\'t have a reminder with that ID.');
+            } else {
+                //console.log(result);
+                console.log("Reminder ID Deleted: " + args[0]);
+                return message.reply('Reminder '+args[0]+' has been deleted!');
             }
-            console.log("Reminder ID Deleted: " + args[0]);
         });
 
         /*if (!rowCount) {
             return message.reply('You don\'t have a reminder with that ID.');
         }*/
-        return message.reply('Reminder '+args[0]+' has been deleted!');
+        //return message.reply('Reminder '+args[0]+' has been deleted!');
     },
 };
