@@ -7,11 +7,26 @@ module.exports = {
     description: 'View all your created reminders.',
     guildOnly: true,
     async execute(message, args) {
-        const {Reminders} = require('../index');
+        const {Reminders, mysql} = require('../index');
         const messageOwner = message.author.id;
 
         try {
-            const findReminders = await Reminders.findAll({attributes: ['reminder_id', 'reminder', 'start_time', 'end_duration', 'message_url'], where: {username: messageOwner}, order: ['end_duration']});
+            //const findReminders = await Reminders.findAll({attributes: ['reminder_id', 'reminder', 'start_time', 'end_duration', 'message_url'], where: {username: messageOwner}, order: ['end_duration']});
+            var findReminders;
+
+            var getAllReminders = function() {
+                let promise = new Promise(function(resolve, reject) {
+                    setTimeout(function() {
+                        mysql.query("SELECT reminder_id, reminder, start_time, end_duration, message_url FROM tbl_Reminders WHERE username = " + mysql.escape(messageOwner) + " ORDER BY end_duration", function(error, result, field) {
+                            if (error) throw error;
+                            resolve(result);
+                        });
+                    }, 1000);
+                });
+                return promise;
+            }
+            findReminders = await getAllReminders();
+
             const nthAmount = 9; //How many reminders per page (max per embed: 25)
             var reminderArrayID = findReminders.map(t => t.reminder_id);
             var reminderArrayReminder = findReminders.map(t => t.reminder);
