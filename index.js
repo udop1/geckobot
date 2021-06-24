@@ -5,7 +5,7 @@ const fs = require('fs');
 const Discord = require('discord.js');
 
 //Require the sequelize module
-const Sequelize = require('sequelize');
+//const Sequelize = require('sequelize');
 
 //Require the MySQL module
 const MySQL = require('mysql');
@@ -38,12 +38,12 @@ for (const file of commandFiles) {
 }
 
 //Database connection info
-const sequelize = new Sequelize('database', 'user', 'password', {
+/*const sequelize = new Sequelize('database', 'user', 'password', {
     host: 'localhost',
     dialect: 'sqlite',
     logging: false,
     storage: 'database.sqlite',
-});
+});*/
 
 //Database connection info
 const mysql = MySQL.createConnection({
@@ -54,7 +54,7 @@ const mysql = MySQL.createConnection({
 });
 
 //Creating database tables
-var Reminders = sequelize.define('tbl_Reminders', {
+/*var Reminders = sequelize.define('tbl_Reminders', {
     reminder_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -85,14 +85,14 @@ var Reminders = sequelize.define('tbl_Reminders', {
         type: Sequelize.TEXT,
         allowNull: false,
     },
-});
-module.exports.Reminders = Reminders;
+});*/
+//module.exports.Reminders = Reminders;
 module.exports.mysql = mysql;
 module.exports.binance = binance;
 
 //Once client is ready, trigger code once after logging in
 client.once('ready', () => {
-    Reminders.sync();
+    //Reminders.sync();
     console.log('RemindMe! Bot is online.');
 });
 
