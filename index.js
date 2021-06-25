@@ -4,9 +4,6 @@ const fs = require('fs');
 //Require the discord.js module
 const Discord = require('discord.js');
 
-//Require the sequelize module
-//const Sequelize = require('sequelize');
-
 //Require the MySQL module
 const MySQL = require('mysql');
 
@@ -38,14 +35,6 @@ for (const file of commandFiles) {
 }
 
 //Database connection info
-/*const sequelize = new Sequelize('database', 'user', 'password', {
-    host: 'localhost',
-    dialect: 'sqlite',
-    logging: false,
-    storage: 'database.sqlite',
-});*/
-
-//Database connection info
 const mysql = MySQL.createConnection({
     host: `${HOST}`,
     user: `${USER}`,
@@ -53,55 +42,17 @@ const mysql = MySQL.createConnection({
     database: `${DATABASE}`
 });
 
-//Creating database tables
-/*var Reminders = sequelize.define('tbl_Reminders', {
-    reminder_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        primaryKey: true,
-        autoIncrement: true,
-    },
-    username: {
-        type: Sequelize.STRING,
-        allowNull: false,
-    },
-    reminder: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-    },
-    start_time: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-    },
-    end_duration: { //In UNIX seconds
-        type: Sequelize.INTEGER,
-        allowNull: false,
-    },
-    channel_in: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-    },
-    message_url: {
-        type: Sequelize.TEXT,
-        allowNull: false,
-    },
-});*/
-//module.exports.Reminders = Reminders;
 module.exports.mysql = mysql;
 module.exports.binance = binance;
 
 //Once client is ready, trigger code once after logging in
 client.once('ready', () => {
-    //Reminders.sync();
     console.log('RemindMe! Bot is online.');
 });
 
 client.on('ready', () => { //Once client is ready
-    //const Op = Sequelize.Op;
-
     setInterval(async function() { //Check reminders
         var currentTime = new Date().getTime() / 1000;
-        //var finishedReminders = await Reminders.findOne({attributes: ['reminder_id', 'username', 'reminder', 'start_time', 'channel_in', 'message_url'], group: ['end_duration'], having: {end_duration: {[Op.lte]: currentTime}}}); //currentTime >= end_duration
         var finishedReminders;
 
         var getFinishedReminders = function() {
@@ -143,8 +94,6 @@ client.on('ready', () => { //Once client is ready
 
             client.channels.cache.get(`${finishedReminders.channel_in}`).send('<@'+finishedReminders.username+'>,\n', embedReminder);
 
-            //client.channels.cache.get(`${finishedReminders.channel_in}`).send(`${finishedReminders.reminder_id}\n${finishedReminders.username}\n${finishedReminders.reminder}\n${finishedReminders.start_time}`);
-            //await Reminders.destroy({where: {reminder_id: finishedReminders.reminder_id}});
             mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id), function (error, result) {
                 if (error) throw error;
                 console.log("Reminder ID Ended: " + finishedReminders.reminder_id);
