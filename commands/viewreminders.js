@@ -7,11 +7,10 @@ module.exports = {
     description: 'View all your created reminders.',
     guildOnly: true,
     async execute(message, args) {
-        const {Reminders, mysql} = require('../index');
+        const {mysql} = require('../index');
         const messageOwner = message.author.id;
 
         try {
-            //const findReminders = await Reminders.findAll({attributes: ['reminder_id', 'reminder', 'start_time', 'end_duration', 'message_url'], where: {username: messageOwner}, order: ['end_duration']});
             var findReminders;
 
             var getAllReminders = function() {
