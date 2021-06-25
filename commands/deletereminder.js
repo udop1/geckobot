@@ -8,7 +8,6 @@ module.exports = {
         const {mysql} = require('../index');
         const messageOwner = message.author.id;
         
-        //const rowCount = await Reminders.destroy({where: {reminder_id: args[0], username: messageOwner}});
         mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(args[0]) + " AND username = " + mysql.escape(messageOwner), function (error, result) {
             if (error) throw error;
             if (result.affectedRows == 0) {
