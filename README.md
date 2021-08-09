@@ -6,10 +6,10 @@ This is a Discord.js bot that was created for my Discord server
 - Ability to create reminders
 - Get current value of any cryptocurrency on Binance
 - Mass delete messages
+- Slash Commands
 
 
 ## Upcoming
-- Slash Commands
 - Recurring Reminders
 - Ability to use features of the bot on it's web interface
 
