@@ -2,13 +2,15 @@
 const fs = require('fs');
 
 //Require the discord.js module
-const Discord = require('discord.js');
+const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
 
 //Require the MySQL module
 const MySQL = require('mysql');
 
 //Require the config.json file
-const {prefix, token, APIKEY, APISECRET, HOST, USER, PASSWORD, DATABASE} = require('./config.json');
+const {token, APIKEY, APISECRET, HOST, USER, PASSWORD, DATABASE} = require('./config.json');
 const { finished } = require('stream');
 
 //Require Binance API
@@ -19,10 +21,9 @@ const binance = new Binance().options({
     useServerTime: true,
 });
 
-//Create a new Discord client, commands Collection, and cooldowns Collection
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
-const cooldowns = new Discord.Collection();
+//Create a new Discord client, and commands Collection Collection
+const client = new Client({intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_INTEGRATIONS, Intents.FLAGS.GUILDS]});
+client.commands = new Collection();
 
 //Returns an array of all file names in that directory with the JavaScript file extension
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -33,6 +34,24 @@ for (const file of commandFiles) {
     //Create a new item in the Collection with the key set as the command's name and the value as the exported module
     client.commands.set(command.name, command);
 }
+
+const commands = client.commands.map(({ execute, ...data }) => data);
+const rest = new REST({ version: '9' }).setToken(token);
+
+(async () => {
+    try {
+        console.log('Started refreshing application (/) commands.');
+
+        await rest.put(
+            Routes.applicationGuildCommands('714834011284963399', '441302620125003788'),
+            { body: commands },
+        );
+
+        console.log('Successfully reloaded application (/) commands.');
+    } catch (error) {
+        console.error(error);
+    }
+})();
 
 //Database connection info
 const mysql = MySQL.createConnection({
@@ -82,7 +101,7 @@ client.on('ready', () => { //Once client is ready
             var sec = dateObject.getSeconds();
             var time = date + '/' + month + '/' + year + '/' + hour + ':' + min + ':' + sec ;
 
-            var embedReminder = new Discord.MessageEmbed()
+            var embedReminder = new MessageEmbed()
             .setColor('#0099ff')
             .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
             .addFields(
@@ -92,7 +111,7 @@ client.on('ready', () => { //Once client is ready
             .setFooter('Time Set')
             .setTimestamp(time);
 
-            client.channels.cache.get(`${finishedReminders.channel_in}`).send('<@'+finishedReminders.username+'>,\n', embedReminder);
+            client.channels.cache.get(`${finishedReminders.channel_in}`).send({content: '<@'+finishedReminders.username+'>,\n', embeds: [embedReminder]});
 
             mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id), function (error, result) {
                 if (error) throw error;
@@ -109,7 +128,6 @@ client.on('ready', () => { //Once client is ready
         await binance.prices('DOGEBUSD', (error, ticker) => {
             try {
                 client.user.setActivity('DOGE/BUSD: ' + Math.round(parseFloat(ticker.DOGEBUSD) * 1000) / 1000);
-                //client.channels.cache.get('673976443956363275').send('DOGE/BUSD: ' + Math.round(parseFloat(ticker.DOGEBUSD) * 1000) / 1000);
                 if (parseFloat(ticker.DOGEBUSD) >= 1) {
                     client.channels.cache.get('693408072504442940').send('@everyone DOGECOIN is now $1+');
                 }
@@ -121,72 +139,24 @@ client.on('ready', () => { //Once client is ready
     }, 600 * 1000);
 });
 
-client.on('message', async message => {
-    if (!message.content.startsWith(prefix) || message.author.bot) return;
+client.on('interactionCreate', async interaction => {
+	if (!interaction.isCommand()) return;
 
-    const args = message.content.slice(prefix.length).split(/ +/);
-    const commandName = args.shift().toLowerCase();
+	if (!client.commands.has(interaction.commandName)) return;
 
-    //If there is no command with the specified name, exit early
-    const command = client.commands.get(commandName)
-		|| client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-
-	if (!command) return;
-
-    if (command.guildOnly && message.channel.type !== 'text') {
-        return message.reply('I can\'t execute that command inside DMs!');
-    }
-
-    if (command.args && !args.length) {
-        let reply = `You didn't provide any arguments, ${message.author}!`;
-
-        if (command.usage) {
-            reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
-        }
-
-        return message.channel.send(reply);
-    }
-
-    //If the command is not on the Collection list, get the current time, record the command used, if a cooldown isn't already specified default to 3 and convert to milliseconds, then get the user's id and combine it with the expiration timestamp
-    if (!cooldowns.has(command.name)) {
-        cooldowns.set(command.name, new Discord.Collection());
-    }
-    const now = Date.now();
-    const timestamps = cooldowns.get(command.name);
-    const cooldownAmount = (command.cooldown || 3) * 1000;
-    if (timestamps.has(message.author.id)) {
-        const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-
-        //If the expirationTime has not passed, return a message letting the user know how much time is left
-        if (now < expirationTime) {
-            const timeLeft = (expirationTime - now) / 1000;
-            return message.reply(`Please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
-        }
-    }
-
-    //If the Collection doesn't have the user's id, set the user's id with the current timestamp and set a timeout to automatically delete it after the cooldown period has passed
-    timestamps.set(message.author.id, now);
-    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
-    try {
-        //If there is a command with the specified name, run it
-        command.execute(message, args);
-    } catch (error) {
-        //If something goes wrong, log the error
-        console.error(error);
-        message.reply('There was an error trying to execute that command!\nError:\n\`' + error + '\`');
-    }
+	try {
+		await client.commands.get(interaction.commandName).execute(interaction);
+	} catch (error) {
+		console.error(error);
+		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
 });
 
-client.on('voiceStateUpdate', (message) => { //Each time voice channel changed
-    /*if (client.channels.cache.get('441302620574056459').members(0)) {
-        
-    }*/
-    if (message.member.voice.channelID === '441302620574056459') { //Main VC
-        message.member.roles.add('776935613446094869');
-        //client.channels.cache.get('482639990812311583').send(client.channels.cache.get('441302620574056459').members());
+client.on('voiceStateUpdate', (interaction) => { //Each time voice channel changed
+    if (interaction.member.voice.channelId === '441302620574056459') { //Main VC
+        interaction.member.roles.add('776935613446094869'); //VC Role
     } else {
-        message.member.roles.remove('776935613446094869');
+        interaction.member.roles.remove('776935613446094869');
     }
 });
 

@@ -1,8 +1,7 @@
 module.exports = {
     name: 'server',
     description: 'Allows you to get info about the server.',
-    guildOnly: true,
-    execute(message, args) {
-        message.channel.send(`This server's name is: ${message.guild.name}\nTotal Members: ${message.guild.memberCount}\nCreated at: ${message.guild.createdAt}`);
+    execute(interaction) {
+        interaction.reply(`This server's name is: ${interaction.guild.name}\nTotal Members: ${interaction.guild.memberCount}\nCreated at: ${interaction.guild.createdAt}`);
     },
 };

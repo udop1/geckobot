@@ -1,14 +1,11 @@
-const {prefix} = require('../config.json');
-const Discord = require('discord.js');
-//const {client} = require('../index.js');
+const {Client, MessageEmbed} = require('discord.js');
 
 module.exports = {
     name: 'viewreminders',
     description: 'View all your created reminders.',
-    guildOnly: true,
-    async execute(message, args) {
+    async execute(interaction) {
         const {mysql} = require('../index');
-        const messageOwner = message.author.id;
+        const messageOwner = interaction.user.id;
 
         try {
             var findReminders;
@@ -40,12 +37,12 @@ module.exports = {
             var splitArrayURL = new Array(Math.ceil(reminderArrayURL.length / nthAmount)).fill().map(_ => reminderArrayURL.splice(0, nthAmount));
 
             console.log(splitArrayID);
-            var reminderUser = await message.client.users.cache.get(messageOwner);
+            var reminderUser = await interaction.client.users.cache.get(messageOwner);
 
             var embeddedReminder = [];
             if (splitArrayID.length > 0) {
                 for (i = 0; i < splitArrayID.length; i++) {
-                    embeddedReminder[i] = new Discord.MessageEmbed()
+                    embeddedReminder[i] = new MessageEmbed()
                     embeddedReminder[i].setColor('#0099ff');
                     embeddedReminder[i].setTitle('Your Reminders:');
                     embeddedReminder[i].setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
@@ -72,10 +69,10 @@ module.exports = {
 
                         embeddedReminder[i].addFields({name: `ID: ${splitArrayID[i][j]}`, value: `Reminder: ${splitArrayReminder[i][j]}\nStart: ${startTime}\nEnd: ${endTime}\n**[Original Message](${splitArrayURL[i][j]})**`, inline: true});
                     }
-                    message.reply(embeddedReminder[i]);
+                    await interaction.reply({embeds: [embeddedReminder[i]]});
                 }
             } else {
-                message.reply(`You have no reminders! Set one using the \`${prefix}addreminder\` command.`);
+                await interaction.reply({ content: `You have no reminders! Set one using the \`addreminder\` command.`, ephemeral: true });
             }
         }
         catch (error) {

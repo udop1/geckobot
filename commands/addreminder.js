@@ -1,23 +1,5 @@
-const {prefix} = require('../config.json');
 var startTime = Math.trunc(new Date().getTime() / 1000);
 
-function conversionvalue(key) {
-	if (key == "s") {
-		return 1;
-	} else if (key == "m") {
-		return 60;
-	} else if (key == "h") {
-		return 3600;
-	} else if (key == "d") {
-		return 86400;
-	} else if (key == "w") {
-		return 604800;
-	} else {
-		return 0;
-	}
-}
-  
-  
 function absoluteresolution(timedata) {
 	let currentDate = new Date();
 	let colon = 0;
@@ -94,88 +76,121 @@ function absoluteresolution(timedata) {
   
 function relativeresolution(timedata) {
 	var startTime = Math.trunc(new Date().getTime() / 1000);
-	for (let i = 0; i < timedata.length; i++) {
-	  	if (timedata[i] == " ") {
-			delete timedata[i];
-	  	}
-	}
-  
-	const dataloc = new Map();
-	for (let i = 0; i < timedata.length; i++) {
-	  	if (timedata[i] == "s" || timedata[i] == "m" || timedata[i] == "h" || timedata[i] == "d" || timedata[i] == "w") {
-			dataloc.set(timedata[i], i);
-	  	}
-	}
-	var unixdata = 0;
-	var previousval = 0;
-	var i = 0;
-	for (let entry of dataloc.entries()) {
-	  	if (i == 0) {
-			let first_val = entry[1];
-			let convval = Number(conversionvalue(entry[0]));
-			let value = Number((timedata.slice(0, first_val)).join(""));
-			unixdata = unixdata + (convval * value);
-			previousval = first_val;
-	  	} else {
-			let val = entry[1];
-			let convval = Number(conversionvalue(entry[0]));
-			let value = Number((timedata.slice(previousval + 1, val).join("")));
-			previousval = val;
-	
-			unixdata = unixdata + (convval * value);
-	  	}
-	  	i = i + 1;
-	}
-	return ((unixdata + startTime));
-}
-  
-function main(message) {
-	var inputstring = (message.split('')).slice(12);
-	for (let i = 0; i < inputstring.length; i++) {
-	  	var x = inputstring.length - i - 1; // Checks list in reverse order, so @s in the message arent counted
-	  	if (inputstring[x] == "@") {
-			var splitpoint = x;
-	  	}
-	}
-	var timedata = inputstring.slice(0, splitpoint);
-	var content = inputstring.slice(splitpoint + 1).join("");
-	var absolute = false;
-	for (let i = 0; i < timedata.length; i++) {
-		if (timedata[i] == ":") {
-			absolute = true;
+
+	for (var i=0; i < timedata.length; i++) {
+		if (timedata[i] == null) {
+			timedata[i] = 0;
 		}
 	}
-	if (absolute == true) {
-	  	var time = absoluteresolution(timedata);
-	} else {
-	  	var time = relativeresolution(timedata);
-	}
-	return([time,content]);
-}
-//console.log(x[0]);
-//console.log(x[1]);
 
+	var unixdata = 0;
+	for (var x=0; x < timedata.length; x++) {
+		unixdata += timedata[x];
+	}
+
+	return (unixdata + startTime);
+}
 
 module.exports = {
     name: 'addreminder',
-    description: `Create a new reminder. The delay for the reminder can be any combination of \'w, d, h, m, s\'.\nExample: \`${prefix}addreminder 2w 5d 30m @ Reminder here\` or \`${prefix}addreminder 3h 30m 20s @ Reminder here\` or \`${prefix}addreminder 17:06 @ Reminder here\` or \`${prefix}addreminder 04:22 22/09/2021 @ Reminder here\``,
-    guildOnly: true,
-    args: true,
-    usage: '<w d h m s> @ <reminder>\n<TT:TT> @ <reminder>\n<TT:TT> <DD/MM/YYYY> @ <reminder>',
-    cooldown: 5,
-    async execute(message, args) {
+    description: 'Create a new reminder.',
+	options: [
+		{
+			name: "absolute",
+			description: "Use 24-hour time with DD/MM/YYYY",
+			type: 1, //Sub Command
+			options: [
+				{
+					name: "message",
+					description: "Reminder message",
+					type: 3, //String
+					required: true,
+				},
+				{
+					name: "time",
+					description: "24-hour",
+					type: 3, //String
+					required: true,
+				},
+				{
+					name: "date",
+					description: "DD/MM/YYYY",
+					type: 3, //String
+					required: true,
+				},
+			],
+		},
+		{
+			name: "relative",
+			description: "Specify how long in weeks/days/hours/minutes/seconds you want your reminder to finish",
+			type: 1, //Sub Command
+			options: [
+				{
+					name: "message",
+					description: "Reminder message",
+					type: 3, //String
+					required: true,
+				},
+				{
+					name: "week",
+					description: "Number of weeks",
+					type: 4, //Integer
+					required: false,
+				},
+				{
+					name: "day",
+					description: "Number of days",
+					type: 4, //Integer
+					required: false,
+				},
+				{
+					name: "hour",
+					description: "Number of hours",
+					type: 4, //Integer
+					required: false,
+				},
+				{
+					name: "minute",
+					description: "Number of minutes",
+					type: 4, //Integer
+					required: false,
+				},
+				{
+					name: "second",
+					description: "Number of seconds",
+					type: 4, //Integer
+					required: false,
+				},
+			],
+		},
+	],
+    async execute(interaction, message) {
         const {mysql} = require('../index');
-        var channelIn = message.channel.id;
+		var channelIn = interaction.channel.id;
+		var reminder = interaction.options.getString('message');
 
-		const inputstring = message.content;
-        x = main(inputstring);
-        const endTime = x[0];
-        const reminder = x[1];
+		var absolutedata = interaction.options.getString('time') + " " + interaction.options.getString('date');
+		absolutedata = absolutedata.split("");
+
+		var weekInput = interaction.options.getInteger('week') * 604800;
+		var dayInput = interaction.options.getInteger('day') * 86400;
+		var hourInput = interaction.options.getInteger('hour') * 3600;
+		var minuteInput = interaction.options.getInteger('minute') * 60;
+		var secondInput = interaction.options.getInteger('second');
+		var relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
+
+		if (interaction.options.getSubcommand() === 'absolute') {
+			var endTime = absoluteresolution(absolutedata);
+		} else if (interaction.options.getSubcommand() === 'relative') {
+			var endTime = relativeresolution(relativedata);
+		}
 
         try {
-			mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, end_duration, channel_in, message_url) VALUES (" + mysql.escape(message.author.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ")", function (error, result) {
+			await interaction.reply('Your reminder is being added...');
+			var message = await interaction.fetchReply();
+			mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, end_duration, channel_in, message_url) VALUES (" + mysql.escape(interaction.user.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ")", function (error, result) {
 				if (error) throw error;
-				console.log("Reminder Added By: " + message.author.id);
+				console.log("Reminder Added By: " + interaction.user.id);
 			});
 
             var dateObject = new Date(endTime * 1000);
@@ -187,13 +202,10 @@ module.exports = {
             var endMin = ('0' + dateObject.getMinutes()).substr(-2);
             var endSec = ('0' + dateObject.getSeconds()).substr(-2);
 
-            //message.reply(message.url);
-            return message.reply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
-			//return message.reply(endTime);
+            return await interaction.editReply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
         } catch (error) {
             console.log(error);
-            message.reply('Error:\n`' + error + '`');
+            return await interaction.reply({ content: 'Error:\n`' + error + '`', ephemeral: true });
         }
-        return message.reply('Something went wrong with adding a reminder.');
     },
 };

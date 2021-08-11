@@ -1,20 +1,24 @@
 module.exports = {
     name: 'getprice',
     description: 'Get the price of a crypto',
-    guildOnly: true,
-    args: true,
-    cooldown: 10,
-    usage: '<ticker symbol>',
-    async execute(message, args) {
+    options: [
+        {
+            name: "ticker",
+            description: "Ticker Symbol",
+            type: 3, //String
+            required: true,
+        },
+    ],
+    async execute(interaction) {
         const {binance} = require('../index');
-        const tickerSymbol = args[0].toUpperCase();
+        const tickerSymbol = interaction.options.getString('ticker').toUpperCase();
 
         await binance.prices(`${tickerSymbol}`, (error, ticker) => {
             try {
-                message.reply(`Price of ${tickerSymbol}: ` + ticker[`${tickerSymbol}`]);
+                interaction.reply(`Price of ${tickerSymbol}: ` + ticker[`${tickerSymbol}`]);
             } catch (error) {
                 console.log(error);
-                message.reply(`The ticker symbol \`${tickerSymbol}\` doesn't exist.`);
+                interaction.reply({ content: `The ticker symbol \`${tickerSymbol}\` doesn't exist.`, ephemeral: true });
             }
         });
     },
