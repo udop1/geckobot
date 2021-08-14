@@ -1,5 +1,3 @@
-var startTime = Math.trunc(new Date().getTime() / 1000);
-
 function absoluteresolution(timedata) {
 	let currentDate = new Date();
 	let colon = 0;
@@ -166,6 +164,7 @@ module.exports = {
 	],
     async execute(interaction, message) {
         const {mysql} = require('../index');
+		var startTime = Math.trunc(new Date().getTime() / 1000);
 		var channelIn = interaction.channel.id;
 		var reminder = interaction.options.getString('message');
 
