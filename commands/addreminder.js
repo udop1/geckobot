@@ -116,6 +116,12 @@ module.exports = {
 					type: 3, //String
 					required: true,
 				},
+				{
+					name: "recurring",
+					description: "Should it repeat?",
+					type: 5,
+					required: false,
+				},
 			],
 		},
 		{
@@ -128,6 +134,12 @@ module.exports = {
 					description: "Reminder message",
 					type: 3, //String
 					required: true,
+				},
+				{
+					name: "recurring",
+					description: "Should it repeat?",
+					type: 5,
+					required: false,
 				},
 				{
 					name: "week",
@@ -184,27 +196,37 @@ module.exports = {
 			var endTime = relativeresolution(relativedata);
 		}
 
-        try {
-			await interaction.reply('Your reminder is being added...');
-			var message = await interaction.fetchReply();
-			mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, end_duration, channel_in, message_url) VALUES (" + mysql.escape(interaction.user.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ")", function (error, result) {
-				if (error) throw error;
-				console.log("Reminder Added By: " + interaction.user.id);
-			});
+		if (interaction.options.getBoolean('recurring') == null || interaction.options.getBoolean('recurring') == false) { //If they don't enter, presume false
+			var isRecurring = 'false';
+		} else if (interaction.options.getBoolean('recurring') == true) {
+			var isRecurring = 'true';
+		}
 
-            var dateObject = new Date(endTime * 1000);
-            var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-            var endYear = dateObject.getFullYear();
-            var endMonth = endMonths[dateObject.getMonth()];
-            var endDate = ('0' + dateObject.getDate()).substr(-2);
-            var endHour = ('0' + dateObject.getHours()).substr(-2);
-            var endMin = ('0' + dateObject.getMinutes()).substr(-2);
-            var endSec = ('0' + dateObject.getSeconds()).substr(-2);
+		if (interaction.options.getBoolean('recurring') == true && endTime < startTime + 21600) {
+			return await interaction.reply({ content: 'Your recurring reminder can\'t end before 6 hours.', ephemeral: true });
+		} else {
+			try {
+				await interaction.reply('Your reminder is being added...');
+				var message = await interaction.fetchReply();
+				mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, end_duration, channel_in, message_url, is_recurring) VALUES (" + mysql.escape(interaction.user.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ", " + mysql.escape(isRecurring) + ")", function (error, result) {
+					if (error) throw error;
+					console.log("Reminder Added By: " + interaction.user.id);
+				});
 
-            return await interaction.editReply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
-        } catch (error) {
-            console.log(error);
-            return await interaction.reply({ content: 'Error:\n`' + error + '`', ephemeral: true });
-        }
+				var dateObject = new Date(endTime * 1000);
+				var endMonths = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+				var endYear = dateObject.getFullYear();
+				var endMonth = endMonths[dateObject.getMonth()];
+				var endDate = ('0' + dateObject.getDate()).substr(-2);
+				var endHour = ('0' + dateObject.getHours()).substr(-2);
+				var endMin = ('0' + dateObject.getMinutes()).substr(-2);
+				var endSec = ('0' + dateObject.getSeconds()).substr(-2);
+
+				return await interaction.editReply('Your reminder for ' + endDate + ' ' + endMonth + ' ' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec + ' has been set!');
+			} catch (error) {
+				console.log(error);
+				return await interaction.reply({ content: 'Error:\n`' + error + '`', ephemeral: true });
+			}
+		}
     },
 };
