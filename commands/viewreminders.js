@@ -13,7 +13,7 @@ module.exports = {
             var getAllReminders = function() {
                 let promise = new Promise(function(resolve, reject) {
                     setTimeout(function() {
-                        mysql.query("SELECT reminder_id, reminder, start_time, end_duration, message_url FROM tbl_Reminders WHERE username = " + mysql.escape(messageOwner) + " ORDER BY end_duration", function(error, result, field) {
+                        mysql.query("SELECT reminder_id, reminder, start_time, end_duration, message_url, is_recurring FROM tbl_Reminders WHERE username = " + mysql.escape(messageOwner) + " ORDER BY end_duration", function(error, result, field) {
                             if (error) throw error;
                             resolve(result);
                         });
@@ -29,12 +29,14 @@ module.exports = {
             var reminderArrayStart = findReminders.map(t => t.start_time);
             var reminderArrayEnd = findReminders.map(t => t.end_duration);
             var reminderArrayURL = findReminders.map(t => t.message_url);
+            var reminderArrayRecurring = findReminders.map(t => t.is_recurring);
             
             var splitArrayID = new Array(Math.ceil(reminderArrayID.length / nthAmount)).fill().map(_ => reminderArrayID.splice(0, nthAmount));
             var splitArrayReminder = new Array(Math.ceil(reminderArrayReminder.length / nthAmount)).fill().map(_ => reminderArrayReminder.splice(0, nthAmount));
             var splitArrayStart = new Array(Math.ceil(reminderArrayStart.length / nthAmount)).fill().map(_ => reminderArrayStart.splice(0, nthAmount));
             var splitArrayEnd = new Array(Math.ceil(reminderArrayEnd.length / nthAmount)).fill().map(_ => reminderArrayEnd.splice(0, nthAmount));
             var splitArrayURL = new Array(Math.ceil(reminderArrayURL.length / nthAmount)).fill().map(_ => reminderArrayURL.splice(0, nthAmount));
+            var splitArrayRecurring = new Array(Math.ceil(reminderArrayRecurring.length / nthAmount)).fill().map(_ => reminderArrayRecurring.splice(0, nthAmount));
 
             console.log(splitArrayID);
             var reminderUser = await interaction.client.users.cache.get(messageOwner);
@@ -67,7 +69,7 @@ module.exports = {
                         var startTime = startDate + '/' + startMonth + '/' + startYear + ' at ' + startHour + ':' + startMin + ':' + startSec;
                         var endTime = endDate + '/' + endMonth + '/' + endYear + ' at ' + endHour + ':' + endMin + ':' + endSec;
 
-                        embeddedReminder[i].addFields({name: `ID: ${splitArrayID[i][j]}`, value: `Reminder: ${splitArrayReminder[i][j]}\nStart: ${startTime}\nEnd: ${endTime}\n**[Original Message](${splitArrayURL[i][j]})**`, inline: true});
+                        embeddedReminder[i].addFields({name: `ID: ${splitArrayID[i][j]}`, value: `Reminder: ${splitArrayReminder[i][j]}\nStart: ${startTime}\nEnd: ${endTime}\nRecurring: ${splitArrayRecurring[i][j]}\n**[Original Message](${splitArrayURL[i][j]})**`, inline: true});
                     }
                     await interaction.reply({embeds: [embeddedReminder[i]]});
                 }
