@@ -2,7 +2,7 @@
 const fs = require('fs');
 
 //Require the discord.js module
-const { Client, Collection, Intents, MessageEmbed } = require('discord.js');
+const { Client, Collection, Intents, MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Routes } = require('discord-api-types/v9');
 
@@ -11,7 +11,6 @@ const MySQL = require('mysql');
 
 //Require the config.json file
 const {token, APIKEY, APISECRET, HOST, USER, PASSWORD, DATABASE} = require('./config.json');
-const { finished } = require('stream');
 
 //Require Binance API
 const Binance = require('node-binance-api');
@@ -43,7 +42,7 @@ const rest = new REST({ version: '9' }).setToken(token);
         console.log('Started refreshing application (/) commands.');
 
         await rest.put(
-            Routes.applicationGuildCommands('714834011284963399', '441302620125003788'),
+            Routes.applicationGuildCommands('666645858288140299', '441302620125003788'),
             { body: commands },
         );
 
@@ -77,7 +76,7 @@ client.on('ready', () => { //Once client is ready
         var getFinishedReminders = function() {
             let promise = new Promise(function(resolve, reject) {
                 setTimeout(function() {
-                    mysql.query("SELECT reminder_id, username, reminder, start_time, channel_in, message_url FROM tbl_Reminders WHERE " + mysql.escape(currentTime) + " >= end_duration ORDER BY end_duration LIMIT 1", function (error, result, fields) {
+                    mysql.query("SELECT reminder_id, username, reminder, start_time, end_duration, channel_in, message_url, is_recurring FROM tbl_Reminders WHERE " + mysql.escape(currentTime) + " >= end_duration ORDER BY end_duration LIMIT 1", function (error, result, fields) {
                         if (error) throw error;
                         resolve(result[0]);
                     });
@@ -90,7 +89,12 @@ client.on('ready', () => { //Once client is ready
         
         try {
             var reminderUser = await client.users.fetch(finishedReminders.username);
+            var isRecurring = finishedReminders.is_recurring;
             var unixTime = finishedReminders.start_time;
+            var endTime = finishedReminders.end_duration;
+            var recurringTime = (endTime - unixTime) + endTime;
+            console.log(recurringTime);
+
             var dateObject = new Date(unixTime * 1000);
             var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             var year = dateObject.getFullYear();
@@ -101,22 +105,49 @@ client.on('ready', () => { //Once client is ready
             var sec = dateObject.getSeconds();
             var time = date + '/' + month + '/' + year + '/' + hour + ':' + min + ':' + sec ;
 
-            var embedReminder = new MessageEmbed()
-            .setColor('#0099ff')
-            .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
-            .addFields(
-                {name: 'Your Reminder:', value: `${finishedReminders.reminder}\n`},
-                {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`}
-            )
-            .setFooter('Time Set')
-            .setTimestamp(time);
+            if (isRecurring == 'false') {
+                var embedReminder = new MessageEmbed() //ADD SNOOZE BUTTON TO THIS
+                .setColor('#0099ff')
+                .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
+                .addFields(
+                    {name: 'Your Reminder:', value: `${finishedReminders.reminder}\n`},
+                    {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`}
+                )
+                .setFooter('Time Set')
+                .setTimestamp(time);
 
-            client.channels.cache.get(`${finishedReminders.channel_in}`).send({content: '<@'+finishedReminders.username+'>,\n', embeds: [embedReminder]});
+                /*var buttonRow = new MessageActionRow()
+                    .addComponents(
+                        new MessageButton()
+                            .setCustomId('snooze')
+                            .setLabel('Snooze Reminder')
+                            .setStyle('PRIMARY'),
+                    );*/
+    
+                client.channels.cache.get(`${finishedReminders.channel_in}`).send({ content: '<@'+finishedReminders.username+'>,\n', embeds: [embedReminder]/*, components: [buttonRow]*/ });
 
-            mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id), function (error, result) {
-                if (error) throw error;
-                console.log("Reminder ID Ended: " + finishedReminders.reminder_id);
-            });
+                mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id), function (error, result) {
+                    if (error) throw error;
+                    console.log("Reminder ID Ended: " + finishedReminders.reminder_id);
+                });
+            } else if (isRecurring == 'true') {
+                var embedReminder = new MessageEmbed()
+                .setColor('#0099ff')
+                .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
+                .addFields(
+                    {name: 'Your Recurring Reminder:', value: `${finishedReminders.reminder}\n`},
+                    {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`}
+                )
+                .setFooter('Time Set')
+                .setTimestamp(time);
+    
+                client.channels.cache.get(`${finishedReminders.channel_in}`).send({ content: '<@'+finishedReminders.username+'>,\n', embeds: [embedReminder] });
+
+                mysql.query("UPDATE tbl_Reminders SET start_time = " + mysql.escape(Math.trunc(new Date().getTime() / 1000)) + " , end_duration = " + mysql.escape(recurringTime) + " WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id)), function (error, result) {
+                    if (error) throw error;
+                    console.log("Reminder ID Recurred: " + finishedReminders.reminder_id);
+                }
+            }
         }
         catch /*(error)*/ {
             //return console.log(error);
@@ -151,6 +182,12 @@ client.on('interactionCreate', async interaction => {
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
 });
+
+/*client.on('collect', async i => {
+    if (i.customID === 'snooze') {
+        await i.update()
+    }
+})*/
 
 client.on('voiceStateUpdate', (interaction) => { //Each time voice channel changed
     if (interaction.member.voice.channelId === '441302620574056459') { //Main VC
