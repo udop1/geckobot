@@ -76,7 +76,7 @@ client.on('ready', () => { //Once client is ready
         var getFinishedReminders = function() {
             let promise = new Promise(function(resolve, reject) {
                 setTimeout(function() {
-                    mysql.query("SELECT reminder_id, username, reminder, start_time, end_duration, channel_in, message_url, is_recurring FROM tbl_Reminders WHERE " + mysql.escape(currentTime) + " >= end_duration ORDER BY end_duration LIMIT 1", function (error, result, fields) {
+                    mysql.query("SELECT reminder_id, username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring FROM tbl_Reminders WHERE " + mysql.escape(currentTime) + " >= end_duration ORDER BY end_duration LIMIT 1", function (error, result, fields) {
                         if (error) throw error;
                         resolve(result[0]);
                     });
@@ -92,7 +92,8 @@ client.on('ready', () => { //Once client is ready
             var isRecurring = finishedReminders.is_recurring;
             var unixTime = finishedReminders.start_time;
             var endTime = finishedReminders.end_duration;
-            var recurringTime = (endTime - unixTime) + endTime;
+            //var recurringTime = (endTime - unixTime) + endTime;
+            var recurringTime = endTime + finishedReminders.recurrence_time;
             console.log(recurringTime);
 
             var dateObject = new Date(unixTime * 1000);
@@ -185,7 +186,7 @@ client.on('interactionCreate', async interaction => {
 
 /*client.on('collect', async i => {
     if (i.customID === 'snooze') {
-        await i.update()
+        console.log("clicked");
     }
 })*/
 
