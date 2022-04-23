@@ -42,6 +42,7 @@ module.exports = {
             var reminderUser = await interaction.client.users.cache.get(messageOwner);
 
             var embeddedReminder = [];
+            var firstEmbed = true;
             if (splitArrayID.length > 0) {
                 for (i = 0; i < splitArrayID.length; i++) {
                     embeddedReminder[i] = new MessageEmbed()
@@ -71,7 +72,13 @@ module.exports = {
 
                         embeddedReminder[i].addFields({name: `ID: ${splitArrayID[i][j]}`, value: `Reminder: ${splitArrayReminder[i][j]}\nStart: ${startTime}\nEnd: ${endTime}\nRecurring: ${splitArrayRecurring[i][j]}\n**[Original Message](${splitArrayURL[i][j]})**`, inline: true});
                     }
-                    await interaction.reply({embeds: [embeddedReminder[i]]});
+                    if (firstEmbed == true) {
+                        await interaction.reply({embeds: [embeddedReminder[i]]});
+                        firstEmbed = false;
+                    } else {
+                        await interaction.followUp({embeds: [embeddedReminder[i]]});
+                    }
+                    
                 }
             } else {
                 await interaction.reply({ content: `You have no reminders! Set one using the \`addreminder\` command.`, ephemeral: true });

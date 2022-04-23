@@ -119,7 +119,7 @@ module.exports = {
 				{
 					name: "recurring",
 					description: "Should it repeat?",
-					type: 5,
+					type: 5, //Boolean
 					required: false,
 				},
 			],
@@ -138,7 +138,7 @@ module.exports = {
 				{
 					name: "recurring",
 					description: "Should it repeat?",
-					type: 5,
+					type: 5, //Boolean
 					required: false,
 				},
 				{
@@ -189,11 +189,19 @@ module.exports = {
 		var minuteInput = interaction.options.getInteger('minute') * 60;
 		var secondInput = interaction.options.getInteger('second');
 		var relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
-
+		
+		
 		if (interaction.options.getSubcommand() === 'absolute') {
 			var endTime = absoluteresolution(absolutedata);
+			var recurrenceSum = endTime - startTime;
 		} else if (interaction.options.getSubcommand() === 'relative') {
 			var endTime = relativeresolution(relativedata);
+
+			var relativeSum = 0;
+			for (var i=0; i < relativedata.length; i++) {
+				relativeSum += relativedata[i];
+			}
+			var recurrenceSum = relativeSum;
 		}
 
 		if (interaction.options.getBoolean('recurring') == null || interaction.options.getBoolean('recurring') == false) { //If they don't enter, presume false
@@ -208,7 +216,7 @@ module.exports = {
 			try {
 				await interaction.reply('Your reminder is being added...');
 				var message = await interaction.fetchReply();
-				mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, end_duration, channel_in, message_url, is_recurring) VALUES (" + mysql.escape(interaction.user.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ", " + mysql.escape(isRecurring) + ")", function (error, result) {
+				mysql.query("INSERT INTO tbl_Reminders (username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring) VALUES (" + mysql.escape(interaction.user.id) + ", " + mysql.escape(reminder) + ", " + mysql.escape(startTime) + ", " + mysql.escape(recurrenceSum) + ", " + mysql.escape(endTime) + ", " + mysql.escape(channelIn) + ", " + mysql.escape(message.url) + ", " + mysql.escape(isRecurring) + ")", function (error, result) {
 					if (error) throw error;
 					console.log("Reminder Added By: " + interaction.user.id);
 				});
