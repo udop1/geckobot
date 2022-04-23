@@ -15,37 +15,13 @@ This is a Discord.js bot that was created for my Discord server
 - Ability to use features of the bot on it's web interface
 
 
-## Usage
-#### /addreminder
-This command allows you to set a reminder. Some examples of how you can use this command are:
-```
-/addreminder 10h 32m 5s This is a reminder message
-/addreminder 11:43 This is a reminder message
-/addreminder 11:43 15/08/2022 This is a reminder message
-```
+## Command Examples
+`/addreminder` - This command allows you to set a reminder.
 
-#### /viewreminders
-This command allows you to see all the reminders you've set. This includes the message ID (so you can delete the reminder), the message, when the reminder was set, when it will end, and a link that takes you to the orginal message. You can use this command with:
-```
-/viewreminders
-```
+`/viewreminders`- This command allows you to see all the reminders you've set.
 
-#### /deletereminders
-This command allows you to delete one of your reminders, where the number would be replaced with your reminder ID. You can get the ID of a reminder with the `!viewreminders` command. You can use this command with:
-```
-/deletereminder 1172
-```
+`/deletereminders` - This command allows you to delete your reminders.
 
-#### /getprice
-This command allows you to get the current value of any cryptocurrency on Binance. Some examples of how you can use this command are:
-```
-/getprice DOGEBUSD
-/getprice BTCGBP
-/getprice XLMBTC
-```
+`/getprice` - This command allows you to get the current value of any cryptocurrency on Binance.
 
-#### /prune
-This command allows you to mass delete messages. An example of how you can use this command is:
-```
-/prune 50
-```
+`/prune` - This command allows you to mass delete messages.
