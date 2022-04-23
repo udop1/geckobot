@@ -33,7 +33,7 @@ function absoluteresolution(timedata) {
 	let firstslash = 0;
 
 	if (slashcount == 1) {
-	  	var Year = currentDate.getFullYear();
+	  	var year = currentDate.getFullYear();
 	} else {
 	  	for (let i = 0; i < timedata.length; i++) {
 			if (timedata[i] == "/") {
