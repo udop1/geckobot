@@ -6,8 +6,8 @@ This is a Discord.js bot that was created for my Discord server
 - Slash commands
 - Ability to create reminders
 - Reminders can also be recurring
-- Get current value of any cryptocurrency on Binance
 - Mass delete messages
+- Play music in voice channels
 
 
 ## Upcoming
@@ -22,6 +22,6 @@ This is a Discord.js bot that was created for my Discord server
 
 `/deletereminders` - This command allows you to delete your reminders.
 
-`/getprice` - This command allows you to get the current value of any cryptocurrency on Binance.
+`/play` - This command allows you to play music in the current voice channel.
 
 `/prune` - This command allows you to mass delete messages.
