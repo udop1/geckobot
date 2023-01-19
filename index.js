@@ -2,27 +2,24 @@
 const fs = require('fs');
 
 //Require the discord.js module
-const { Client, Collection, Intents, MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
+const { Client, Collection, GatewayIntentBits, EmbedBuilder, Routes } = require('discord.js');
 const { REST } = require('@discordjs/rest');
-const { Routes } = require('discord-api-types/v9');
+const { Player, QueryType, QueueRepeatMode } = require('discord-player');
+const { Lyrics } = require('@discord-player/extractor');
 
 //Require the MySQL module
 const MySQL = require('mysql');
 
 //Require the config.json file
-const {token, APIKEY, APISECRET, HOST, USER, PASSWORD, DATABASE} = require('./config.json');
-
-//Require Binance API
-const Binance = require('node-binance-api');
-const binance = new Binance().options({
-    APIKEY: `${APIKEY}`,
-    APISECRET: `${APISECRET}`,
-    useServerTime: true,
-});
+const {token, HOST, USER, PASSWORD, DATABASE} = require('./config.json');
 
 //Create a new Discord client, and commands Collection Collection
-const client = new Client({intents: [Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_INTEGRATIONS, Intents.FLAGS.GUILDS]});
+const client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildIntegrations]});
 client.commands = new Collection();
+
+//Create a new Discord Player
+const player = new Player(client);
+const lyricsClient = Lyrics.init();
 
 //Returns an array of all file names in that directory with the JavaScript file extension
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -35,8 +32,9 @@ for (const file of commandFiles) {
 }
 
 const commands = client.commands.map(({ execute, ...data }) => data);
-const rest = new REST({ version: '9' }).setToken(token);
+const rest = new REST({ version: '10' }).setToken(token);
 
+//Update slash commands
 (async () => {
     try {
         console.log('Started refreshing application (/) commands.');
@@ -61,11 +59,25 @@ const mysql = MySQL.createConnection({
 });
 
 module.exports.mysql = mysql;
-module.exports.binance = binance;
+module.exports.rest = rest;
+module.exports.Routes = Routes;
+module.exports.commands = commands;
+module.exports.player = player;
+module.exports.QueryType = QueryType;
+module.exports.QueueRepeatMode = QueueRepeatMode;
+module.exports.lyricsClient = lyricsClient;
 
 //Once client is ready, trigger code once after logging in
 client.once('ready', () => {
-    console.log('RemindMe! Bot is online.');
+    console.log('GeckoBot is online.');
+});
+
+//Discord Player handlers
+player.on('error', (error) => {
+	console.log(`General error: ${error}`);
+});
+player.on('connectionError', (error) => {
+	console.log(`Connection error: ${error}`);
 });
 
 client.on('ready', () => { //Once client is ready
@@ -88,13 +100,12 @@ client.on('ready', () => { //Once client is ready
         finishedReminders = await getFinishedReminders();
         
         try {
+            if (!finishedReminders) {return;}
             var reminderUser = await client.users.fetch(finishedReminders.username);
             var isRecurring = finishedReminders.is_recurring;
             var unixTime = finishedReminders.start_time;
             var endTime = finishedReminders.end_duration;
-            //var recurringTime = (endTime - unixTime) + endTime;
             var recurringTime = endTime + finishedReminders.recurrence_time;
-            console.log(recurringTime);
 
             var dateObject = new Date(unixTime * 1000);
             var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -107,23 +118,15 @@ client.on('ready', () => { //Once client is ready
             var time = date + '/' + month + '/' + year + '/' + hour + ':' + min + ':' + sec ;
 
             if (isRecurring == 'false') {
-                var embedReminder = new MessageEmbed() //ADD SNOOZE BUTTON TO THIS
+                var embedReminder = new EmbedBuilder() //ADD SNOOZE BUTTON TO THIS
                 .setColor('#0099ff')
-                .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
+                .setAuthor({ name: `${reminderUser.tag}`, iconURL: reminderUser.displayAvatarURL({dynamic: true}) })
                 .addFields(
                     {name: 'Your Reminder:', value: `${finishedReminders.reminder}\n`},
-                    {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`}
+                    {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`},
                 )
-                .setFooter('Time Set')
-                .setTimestamp(time);
-
-                /*var buttonRow = new MessageActionRow()
-                    .addComponents(
-                        new MessageButton()
-                            .setCustomId('snooze')
-                            .setLabel('Snooze Reminder')
-                            .setStyle('PRIMARY'),
-                    );*/
+                .setFooter({ text: 'Time Set' })
+                .setTimestamp(Date.parse(time));
     
                 client.channels.cache.get(`${finishedReminders.channel_in}`).send({ content: '<@'+finishedReminders.username+'>,\n', embeds: [embedReminder]/*, components: [buttonRow]*/ });
 
@@ -132,15 +135,15 @@ client.on('ready', () => { //Once client is ready
                     console.log("Reminder ID Ended: " + finishedReminders.reminder_id);
                 });
             } else if (isRecurring == 'true') {
-                var embedReminder = new MessageEmbed()
+                var embedReminder = new EmbedBuilder()
                 .setColor('#0099ff')
-                .setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
+                .setAuthor({ name: `${reminderUser.tag}`, iconURL: reminderUser.displayAvatarURL({dynamic: true}) })
                 .addFields(
                     {name: 'Your Recurring Reminder:', value: `${finishedReminders.reminder}\n`},
-                    {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`}
+                    {name: '\u200b', value: `**[Original Message](${finishedReminders.message_url})**`},
                 )
-                .setFooter('Time Set')
-                .setTimestamp(time);
+                .setFooter({ text: 'Time Set' })
+                .setTimestamp(Date.parse(time));
     
                 client.channels.cache.get(`${finishedReminders.channel_in}`).send({ content: '<@'+finishedReminders.username+'>,\n', embeds: [embedReminder] });
 
@@ -150,29 +153,15 @@ client.on('ready', () => { //Once client is ready
                 }
             }
         }
-        catch /*(error)*/ {
-            //return console.log(error);
-            return;
+        catch (error) {
+            return console.log(error);
         }
     }, 1 * 1000);
-
-    setInterval(async function() {
-        await binance.prices('DOGEBUSD', (error, ticker) => {
-            try {
-                client.user.setActivity('DOGE/BUSD: ' + Math.round(parseFloat(ticker.DOGEBUSD) * 1000) / 1000);
-                if (parseFloat(ticker.DOGEBUSD) >= 1) {
-                    client.channels.cache.get('693408072504442940').send('@everyone DOGECOIN is now $1+');
-                }
-            }
-            catch {
-                return console.log(error);
-            }
-        })
-    }, 600 * 1000);
 });
 
+//Command handler
 client.on('interactionCreate', async interaction => {
-	if (!interaction.isCommand()) return;
+	if (!interaction.isChatInputCommand()) return;
 
 	if (!client.commands.has(interaction.commandName)) return;
 
@@ -182,20 +171,6 @@ client.on('interactionCreate', async interaction => {
 		console.error(error);
 		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
 	}
-});
-
-/*client.on('collect', async i => {
-    if (i.customID === 'snooze') {
-        console.log("clicked");
-    }
-})*/
-
-client.on('voiceStateUpdate', (interaction) => { //Each time voice channel changed
-    if (interaction.member.voice.channelId === '441302620574056459') { //Main VC
-        interaction.member.roles.add('776935613446094869'); //VC Role
-    } else {
-        interaction.member.roles.remove('776935613446094869');
-    }
 });
 
 //Login to Discord with app's token

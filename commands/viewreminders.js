@@ -1,4 +1,4 @@
-const {Client, MessageEmbed} = require('discord.js');
+const {Client, EmbedBuilder} = require('discord.js');
 
 module.exports = {
     name: 'viewreminders',
@@ -45,11 +45,11 @@ module.exports = {
             var firstEmbed = true;
             if (splitArrayID.length > 0) {
                 for (i = 0; i < splitArrayID.length; i++) {
-                    embeddedReminder[i] = new MessageEmbed()
+                    embeddedReminder[i] = new EmbedBuilder()
                     embeddedReminder[i].setColor('#0099ff');
                     embeddedReminder[i].setTitle('Your Reminders:');
-                    embeddedReminder[i].setAuthor(`${reminderUser.tag}`, reminderUser.displayAvatarURL({dynamic: true}))
-                    embeddedReminder[i].setFooter(`Page ${i+1}`);
+                    embeddedReminder[i].setAuthor({ name: `${reminderUser.tag}`, iconURL: reminderUser.displayAvatarURL({dynamic: true}) });
+                    embeddedReminder[i].setFooter({ text: `Page ${i+1}` });
                     embeddedReminder[i].setTimestamp();
 
                     for (j = 0; j < splitArrayID[i].length; j++) {

@@ -1,4 +1,4 @@
-const {MessageEmbed} = require('discord.js');
+const {EmbedBuilder} = require('discord.js');
 
 module.exports = {
     name: 'releases',
@@ -31,7 +31,7 @@ module.exports = {
             var firstEmbed = true;
             if (splitArrayName.length > 0) {
                 for (var i = 0; i < splitArrayName.length; i++) {
-                    embeddedReminder[i] = new MessageEmbed();
+                    embeddedReminder[i] = new EmbedBuilder();
                     embeddedReminder[i].setColor('#0099ff');
                     embeddedReminder[i].setTitle('Upcoming Releases');
 

@@ -1,4 +1,4 @@
-const { Permissions } = require('discord.js');
+const { PermissionsBitField } = require('discord.js');
 
 module.exports = {
     name: 'prune',
@@ -12,7 +12,7 @@ module.exports = {
         },
     ],
     async execute(interaction) {
-        if (interaction.member.permissions.has(Permissions.FLAGS.MANAGE_MESSAGES)) {
+        if (interaction.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
             const amount = interaction.options.getInteger('number');
 
             if (isNaN(amount)) {
