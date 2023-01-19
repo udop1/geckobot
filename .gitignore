@@ -1,6 +1,2 @@
-# Modules and Packages
-node_modules/
-
-# Miscellaneous
+node_modules
 config.json
-BinanceAPI.PNG
