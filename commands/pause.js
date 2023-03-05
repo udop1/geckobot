@@ -14,16 +14,16 @@ module.exports = {
 				return await interaction.editReply({ content: 'You\'re not in my voice channel', ephemeral: true });
 			}
 
-			const queue = player.getQueue(interaction.guildId);
+			const queue = player.nodes.get(interaction.guildId);
 
 			//Check if music is being played
-			if (!queue || !queue.playing) {
+			if (!queue || !queue.node.isPlaying) {
 				return await interaction.editReply({ content: 'No music is currently being played' });
 			}
 
-			queue.setPaused(true);
+			queue.node.pause();
 
-			return await interaction.editReply({ content: `Resumed **${queue.current.title}**` });
+			return await interaction.editReply({ content: `Paused **${queue.currentTrack.title}**` });
 
 		} catch (error) {
 			console.log(error);

@@ -38,22 +38,25 @@ module.exports = {
 			}
 
 			//Create queue
-			const queue = player.createQueue(interaction.guild, {
-				ytdlOptions: {
-					quality: 'highestaudio',
-					filter: 'audioonly',
-				},
-				metadata: {
-					channel: interaction.channel
-				},
-				disableVolume: true,
-
-				async onBeforeCreateStream(track, source, _queue) {
-					if (source === "youtube") {
-						return (await playdl.stream(track.url, { discordPlayerCompatibility: true })).stream;
+			var queue = player.nodes.get(interaction.guildId);
+			if (!queue) {
+				var queue = player.nodes.create(interaction.guild, {
+					ytdlOptions: {
+						quality: 'highestaudio',
+						filter: 'audioonly',
+					},
+					metadata: {
+						channel: interaction.channel
+					},
+					disableVolume: true,
+	
+					async onBeforeCreateStream(track, source, _queue) {
+						if (source === "youtube") {
+							return (await playdl.stream(track.url, { discordPlayerCompatibility: true })).stream;
+						}
 					}
-				}
-			});
+				});
+			}
 
 			//Attempt VC connection
 			try {
@@ -62,7 +65,7 @@ module.exports = {
 				}
 
 			} catch {
-				queue.destroy();
+				queue.delete();
 				return await interaction.editReply({ content: 'Couldn\'t join your voice channel', ephemeral: true });
 			}
 
@@ -133,8 +136,8 @@ module.exports = {
 
 				//If there's a playlist, add all of them. Otherwise, just add the first result
 				queue.addTrack(searchResult.tracks[searchChoice]);
-				if (!queue.playing) { //If not already playing
-					await queue.play();
+				if (!queue.node.isPlaying()) { //If not already playing
+					await queue.node.play();
 				}
 
 				return await interaction.editReply({ content: `\:notes: Added **${searchResult.tracks[searchChoice].title}** (\`${searchResult.tracks[searchChoice].duration}\`) to the queue!`, embeds: [] });

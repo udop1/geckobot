@@ -14,24 +14,24 @@ module.exports = {
 				return await interaction.editReply({ content: 'You\'re not in my voice channel', ephemeral: true });
 			}
 
-			const queue = player.getQueue(interaction.guildId);
+			const queue = player.nodes.get(interaction.guildId);
 
 			//Check if music is being played
-			if (!queue || !queue.playing) {
+			if (!queue || !queue.node.isPlaying) {
 				return await interaction.editReply({ content: 'No music is currently being played' });
 			}
 
-			const progress = queue.createProgressBar();
+			const progress = queue.node.createProgressBar();
 
 			return await interaction.editReply({
 				embeds: [
 					{
 						title: 'Now Playing:',
-						description: `**${queue.current.title}**\nRequested By: ${queue.current.requestedBy}`,
+						description: `**${queue.currentTrack.title}**\nRequested By: ${queue.currentTrack.requestedBy}`,
 						fields: [
 							{
 								name: 'Link:',
-								value: queue.current.url,
+								value: queue.currentTrack.url,
 							},
 							{
 								name: '\u200b',

@@ -5,7 +5,6 @@ const fs = require('fs');
 const { Client, Collection, GatewayIntentBits, EmbedBuilder, Routes } = require('discord.js');
 const { REST } = require('@discordjs/rest');
 const { Player, QueryType, QueueRepeatMode } = require('discord-player');
-const { Lyrics } = require('@discord-player/extractor');
 
 //Require the MySQL module
 const MySQL = require('mysql');
@@ -19,7 +18,6 @@ client.commands = new Collection();
 
 //Create a new Discord Player
 const player = new Player(client);
-const lyricsClient = Lyrics.init();
 
 //Returns an array of all file names in that directory with the JavaScript file extension
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -65,7 +63,6 @@ module.exports.commands = commands;
 module.exports.player = player;
 module.exports.QueryType = QueryType;
 module.exports.QueueRepeatMode = QueueRepeatMode;
-module.exports.lyricsClient = lyricsClient;
 
 //Once client is ready, trigger code once after logging in
 client.once('ready', () => {

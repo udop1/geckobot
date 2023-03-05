@@ -37,15 +37,15 @@ module.exports = {
 				return await interaction.editReply({ content: 'You\'re not in my voice channel', ephemeral: true });
 			}
 
-			const queue = player.getQueue(interaction.guildId);
+			const queue = player.nodes.get(interaction.guildId);
 
 			//Check if music is being played
-			if (!queue || !queue.playing) {
+			if (!queue || !queue.node.isPlaying) {
 				return await interaction.editReply({ content: 'No music is currently being played' });
 			}
 
 			//Check if anything is in the queue
-			if (!queue.tracks[0]) {
+			if (!queue.tracks.map((track, id) => ++id)) {
 				return await interaction.editReply({ content: 'Nothing currently in the queue' });
 			}
 
@@ -54,16 +54,10 @@ module.exports = {
 			if (interaction.options.getSubcommand() === 'view') {
 				//Seperates the queue into specific blocks
 				var embedLength = 25;
-				var queueArrTitle = [];
-				var queueArrAuthor = [];
-				var queueArrRequested = [];
-				var queueArrURL = [];
-				for (var i = 0; i < queue.tracks.length; i++) {
-					queueArrTitle.push(queue.tracks[i].title);
-					queueArrAuthor.push(queue.tracks[i].author);
-					queueArrRequested.push(queue.tracks[i].requestedBy.username);
-					queueArrURL.push(queue.tracks[i].url);
-				}
+				var queueArrTitle = queue.tracks.map((track) => track.title);
+				var queueArrAuthor = queue.tracks.map((track) => track.author);
+				var queueArrRequested = queue.tracks.map((track) => track.requestedBy.username);
+				var queueArrURL = queue.tracks.map((track) => track.url);
 
 				var splitArrTitle = new Array(Math.ceil(queueArrTitle.length / embedLength)).fill().map(_ => queueArrTitle.splice(0, embedLength));
 				var splitArrAuthor = new Array(Math.ceil(queueArrAuthor.length / embedLength)).fill().map(_ => queueArrAuthor.splice(0, embedLength));
@@ -97,7 +91,7 @@ module.exports = {
 
 			//Delete command
 			else if (interaction.options.getSubcommand() === 'delete') {
-				if (queuePos > queue.tracks.length && queuePos < queue.tracks.length) {
+				if (queuePos > queue.tracks.size && queuePos < queue.tracks.size) {
 					return await interaction.editReply({ content: 'There is nothing in this position in the queue' });
 				}
 
