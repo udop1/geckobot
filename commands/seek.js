@@ -48,7 +48,7 @@ module.exports = {
 				return await interaction.editReply({ content: `You can only seek within the duration of the song (\`${queue.currentTrack.duration}\`)`, ephemeral: true });
 			}
 
-			queue.seek(skipTo); //Seeks in MS
+			await queue.node.seek(skipTo); //Seeks in MS
 
 			if (!skipMins) {
 				skipMins = '0';
