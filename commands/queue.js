@@ -45,7 +45,7 @@ module.exports = {
 			}
 
 			//Check if anything is in the queue
-			if (!queue.tracks.map((track, id) => ++id)) {
+			if (queue.tracks.data.length <= 0) {
 				return await interaction.editReply({ content: "Nothing currently in the queue" });
 			}
 
@@ -92,7 +92,7 @@ module.exports = {
 					return await interaction.editReply({ content: "There is nothing in this position in the queue" });
 				}
 
-				var removedSong = queue.tracks[queuePos].title;
+				var removedSong = queue.tracks.data[queuePos].title;
 
 				queue.node.remove(queuePos);
 
