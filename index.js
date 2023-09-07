@@ -8,7 +8,7 @@ const { Player, QueryType, QueueRepeatMode } = require("discord-player");
 const { lyricsExtractor } = require("@discord-player/extractor");
 
 //Require the MySQL module
-const MySQL = require("mysql");
+const MySQL = require("mysql2");
 
 //Require the config.json file
 const { token, HOST, USER, PASSWORD, DATABASE } = require("./config.json");

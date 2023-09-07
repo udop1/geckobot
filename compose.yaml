@@ -1,0 +1,48 @@
+services:
+    geckobot:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: node:18-alpine
+        restart: always
+        command: sh -c "npm install && node ."
+        working_dir: /geckobotapp
+        volumes:
+            - ./:/geckobotapp
+        environment:
+            MYSQL_HOST: mysql
+            MYSQL_USER: root
+            MYSQL_PASSWORD: secret
+            MYSQL_DB: db_GeckoBot
+            TZ: Europe/London
+
+    mysql:
+        image: mysql:8.0
+        restart: always
+        volumes:
+            - geckobotapp-mysql-data:/var/lib/mysql
+        environment:
+            MYSQL_ROOT_PASSWORD: secret
+            MYSQL_DATABASE: db_GeckoBot
+
+    phpmyadmin:
+        image: phpmyadmin:5-apache
+        restart: always
+        ports:
+            - 8080:80
+        environment:
+            - PMA_ARBITRARY=1
+
+volumes:
+    geckobotapp-mysql-data:
+
+x-casaos:
+    author: self
+    category: self
+    hostname: ""
+    icon: ""
+    index: /
+    port_map: "8080"
+    scheme: http
+    title:
+        custom: Gecko Bot

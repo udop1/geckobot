@@ -31,7 +31,7 @@
     "jsprim": "^1.4.2",
     "libsodium-wrappers": "^0.7.10",
     "minimist": "^1.2.6",
-    "mysql": "^2.18.1",
+    "mysql2": "^3.6.0",
     "node-fetch": "^2.6.7",
     "ow": "^0.27.0",
     "peek-readable": "^5.0.0",
