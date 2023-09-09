@@ -5,7 +5,7 @@ services:
             dockerfile: Dockerfile
         image: node:18-alpine
         restart: always
-        command: sh -c "npm install && node ."
+        command: sh -c "node ."
         working_dir: /geckobotapp
         volumes:
             - ./:/geckobotapp
