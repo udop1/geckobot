@@ -3,5 +3,5 @@
 FROM node:18-alpine
 WORKDIR /geckobotapp
 COPY package*.json ./
-RUN apk add python3 make g++ tzdata && npm install
+RUN apk add python3 make g++ tzdata ffmpeg && npm install
 COPY . .

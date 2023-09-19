@@ -1,172 +1,127 @@
-//Require Node's native file system module
+//Setup dependencies
 const fs = require("fs");
-
-//Require the discord.js module
-const { Client, Collection, GatewayIntentBits, EmbedBuilder, Routes } = require("discord.js");
-const { REST } = require("@discordjs/rest");
-const { Player, QueryType, QueueRepeatMode } = require("discord-player");
-const { lyricsExtractor } = require("@discord-player/extractor");
-
-//Require the MySQL module
+const path = require("path");
 const MySQL = require("mysql2");
+const { Client, Collection, GatewayIntentBits, REST, Routes } = require("discord.js");
+const { DisTube } = require("distube");
+const { SoundCloudPlugin } = require("@distube/soundcloud");
+const { SpotifyPlugin } = require("@distube/spotify");
+const { YtDlpPlugin } = require("@distube/yt-dlp");
+const { DeezerPlugin } = require("@distube/deezer");
+require("dotenv").config();
 
-//Require the config.json file
-const { token, HOST, USER, PASSWORD, DATABASE } = require("./config.json");
+//Initialise clients
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.GuildMessageReactions,
+		GatewayIntentBits.GuildVoiceStates,
+		GatewayIntentBits.GuildIntegrations,
+	],
+});
 
-//Create a new Discord client, and commands Collection Collection
-const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.GuildIntegrations] });
+client.distube = new DisTube(client, {
+	plugins: [new SoundCloudPlugin(), new SpotifyPlugin(), new YtDlpPlugin(), new DeezerPlugin()],
+	emitNewSongOnly: false,
+	leaveOnEmpty: true,
+	emptyCooldown: 10,
+	leaveOnFinish: true,
+	leaveOnStop: true,
+	savePreviousSongs: true,
+	searchSongs: 5,
+	searchCooldown: 60,
+	ytdlOptions: {
+		quality: "highestaudio",
+		filter: "audioonly",
+	},
+	nsfw: false,
+	emitAddListWhenCreatingQueue: true,
+	emitAddSongWhenCreatingQueue: true,
+	joinNewVoiceChannel: false,
+	streamType: 0,
+	directLink: true,
+});
+
 client.commands = new Collection();
 
-//Create a new Discord Player
-const player = new Player(client);
-const lyricsClient = lyricsExtractor();
+//Retrieve all commands
+const commands = [];
+const foldersPath = path.join(__dirname, "commands");
+const commandFolders = fs.readdirSync(foldersPath);
 
-//Returns an array of all file names in that directory with the JavaScript file extension
-const commandFiles = fs.readdirSync("./commands").filter((file) => file.endsWith(".js"));
+for (const folder of commandFolders) {
+	const commandsPath = path.join(foldersPath, folder);
+	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
 
-for (const file of commandFiles) {
-	const command = require(`./commands/${file}`);
+	for (const file of commandFiles) {
+		const filePath = path.join(commandsPath, file);
+		const command = require(filePath);
 
-	//Create a new item in the Collection with the key set as the command's name and the value as the exported module
-	client.commands.set(command.name, command);
+		if ("data" in command && "execute" in command) {
+			client.commands.set(command.data.name, command);
+			commands.push(command.data.toJSON());
+		} else {
+			console.warn(
+				`The command at ${filePath} is missing a required "data" or "execute" property.`
+			);
+		}
+	}
 }
 
-const commands = client.commands.map(({ execute, ...data }) => data);
-const rest = new REST({ version: "10" }).setToken(token);
-
-//Update slash commands
+//Update all commands
+const rest = new REST().setToken(process.env.TOKEN);
 (async () => {
 	try {
-		console.log("Started refreshing application (/) commands.");
+		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-		await rest.put(Routes.applicationGuildCommands("666645858288140299", "441302620125003788"), { body: commands });
+		const data = await rest.put(
+			Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+			{ body: commands }
+		);
 
-		console.log("Successfully reloaded application (/) commands.");
+		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 	} catch (error) {
 		console.error(error);
 	}
 })();
 
-//Database connection info
+//Database connection
 const mysql = MySQL.createConnection({
-	host: `${HOST}`,
-	user: `${USER}`,
-	password: `${PASSWORD}`,
-	database: `${DATABASE}`,
+	host: `${process.env.HOST}`,
+	user: `${process.env.USER}`,
+	password: `${process.env.PASSWORD}`,
+	database: `${process.env.DATABASE}`,
 });
 
+//Exports
+module.exports.client = client;
 module.exports.mysql = mysql;
 module.exports.rest = rest;
 module.exports.Routes = Routes;
-module.exports.commands = commands;
-module.exports.player = player;
-module.exports.QueryType = QueryType;
-module.exports.QueueRepeatMode = QueueRepeatMode;
-module.exports.lyricsClient = lyricsClient;
 
-//Once client is ready, trigger code once after logging in
-client.once("ready", () => {
-	console.log("GeckoBot is online.");
-});
+//Event handlers
+const eventsPath = path.join(__dirname, "events");
+const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith(".js"));
 
-//Discord Player handlers
-player.on("error", (error) => {
-	console.log(`General error: ${error}`);
-});
-player.on("connectionError", (error) => {
-	console.log(`Connection error: ${error}`);
-});
+for (const file of eventFiles) {
+	const filePath = path.join(eventsPath, file);
+	const event = require(filePath);
 
-client.on("ready", () => {
-	//Once client is ready
-	setInterval(async function () {
-		//Check reminders
-		var currentTime = new Date().getTime() / 1000;
-		var finishedReminders;
+	if (event.once) {
+		client.once(event.name, (...args) => event.execute(...args));
 
-		var getFinishedReminders = function () {
-			let promise = new Promise(function (resolve, reject) {
-				setTimeout(function () {
-					mysql.query("SELECT reminder_id, username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring FROM tbl_Reminders WHERE " + mysql.escape(currentTime) + " >= end_duration ORDER BY end_duration LIMIT 1", function (error, result, fields) {
-						if (error) throw error;
-						resolve(result[0]);
-					});
-				}, 1000);
-			});
-			return promise;
-		};
-
-		finishedReminders = await getFinishedReminders();
-
-		try {
-			if (!finishedReminders) {
-				return;
-			}
-			var reminderUser = await client.users.fetch(finishedReminders.username);
-			var isRecurring = finishedReminders.is_recurring;
-			var unixTime = finishedReminders.start_time;
-			var endTime = finishedReminders.end_duration;
-			var recurringTime = endTime + finishedReminders.recurrence_time;
-
-			var dateObject = new Date(unixTime * 1000);
-			var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-			var year = dateObject.getFullYear();
-			var month = months[dateObject.getMonth()];
-			var date = dateObject.getDate();
-			var hour = dateObject.getHours();
-			var min = dateObject.getMinutes();
-			var sec = dateObject.getSeconds();
-			var time = date + "/" + month + "/" + year + "/" + hour + ":" + min + ":" + sec;
-
-			if (isRecurring == "false") {
-				var embedReminder = new EmbedBuilder() //ADD SNOOZE BUTTON TO THIS
-					.setColor("#0099ff")
-					.setAuthor({ name: `${reminderUser.tag}`, iconURL: reminderUser.displayAvatarURL({ dynamic: true }) })
-					.addFields({ name: "Your Reminder:", value: `${finishedReminders.reminder}\n` }, { name: "\u200b", value: `**[Original Message](${finishedReminders.message_url})**` })
-					.setFooter({ text: "Time Set" })
-					.setTimestamp(Date.parse(time));
-
-				client.channels.cache.get(`${finishedReminders.channel_in}`).send({ content: "<@" + finishedReminders.username + ">,\n", embeds: [embedReminder] /*, components: [buttonRow]*/ });
-
-				mysql.query("DELETE FROM tbl_Reminders WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id), function (error, result) {
-					if (error) throw error;
-					console.log("Reminder ID Ended: " + finishedReminders.reminder_id);
-				});
-			} else if (isRecurring == "true") {
-				var embedReminder = new EmbedBuilder()
-					.setColor("#0099ff")
-					.setAuthor({ name: `${reminderUser.tag}`, iconURL: reminderUser.displayAvatarURL({ dynamic: true }) })
-					.addFields({ name: "Your Recurring Reminder:", value: `${finishedReminders.reminder}\n` }, { name: "\u200b", value: `**[Original Message](${finishedReminders.message_url})**` })
-					.setFooter({ text: "Time Set" })
-					.setTimestamp(Date.parse(time));
-
-				client.channels.cache.get(`${finishedReminders.channel_in}`).send({ content: "<@" + finishedReminders.username + ">,\n", embeds: [embedReminder] });
-
-				mysql.query("UPDATE tbl_Reminders SET start_time = " + mysql.escape(Math.trunc(new Date().getTime() / 1000)) + " , end_duration = " + mysql.escape(recurringTime) + " WHERE reminder_id = " + mysql.escape(finishedReminders.reminder_id)),
-					function (error, result) {
-						if (error) throw error;
-						console.log("Reminder ID Recurred: " + finishedReminders.reminder_id);
-					};
-			}
-		} catch (error) {
-			return console.log(error);
+		if (event.distube) {
+			client.distube.once(event.name, (...args) => event.execute(...args));
 		}
-	}, 1 * 1000);
-});
+	} else {
+		client.on(event.name, (...args) => event.execute(...args));
 
-//Command handler
-client.on("interactionCreate", async (interaction) => {
-	if (!interaction.isChatInputCommand()) return;
-
-	if (!client.commands.has(interaction.commandName)) return;
-
-	try {
-		await client.commands.get(interaction.commandName).execute(interaction);
-	} catch (error) {
-		console.error(error);
-		await interaction.reply({ content: "There was an error while executing this command!", ephemeral: true });
+		if (event.distube) {
+			client.distube.on(event.name, (...args) => event.execute(...args));
+		}
 	}
-});
+}
 
-//Login to Discord with app's token
-client.login(token);
+//Connect client to Discord
+client.login(process.env.TOKEN);
