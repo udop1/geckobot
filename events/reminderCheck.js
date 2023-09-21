@@ -35,6 +35,15 @@ module.exports = {
 					return;
 				}
 				var reminderUser = await client.users.fetch(finishedReminders.username);
+				var reminderGuildUser;
+				client.guilds.cache.forEach((guild) => {
+					guild.members.cache.find((member) => {
+						if (member.user.id === finishedReminders.username) {
+							reminderGuildUser = member;
+						}
+					});
+				});
+
 				var isRecurring = finishedReminders.is_recurring;
 				var unixTime = finishedReminders.start_time;
 				var endTime = finishedReminders.end_duration;
@@ -68,7 +77,10 @@ module.exports = {
 					embedReminder = new EmbedBuilder() //ADD SNOOZE BUTTON TO THIS
 						.setColor("#0099ff")
 						.setAuthor({
-							name: `${reminderUser.tag}`,
+							name:
+								reminderGuildUser.displayName === reminderUser.username
+									? reminderUser.username
+									: `${reminderGuildUser.displayName} (${reminderUser.username})`,
 							iconURL: reminderUser.displayAvatarURL(),
 						})
 						.addFields(
@@ -102,7 +114,10 @@ module.exports = {
 					embedReminder = new EmbedBuilder()
 						.setColor("#0099ff")
 						.setAuthor({
-							name: `${reminderUser.tag}`,
+							name:
+								reminderGuildUser.displayName === reminderUser.username
+									? reminderUser.username
+									: `${reminderGuildUser.displayName} (${reminderUser.username})`,
 							iconURL: reminderUser.displayAvatarURL(),
 						})
 						.addFields(

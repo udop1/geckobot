@@ -62,6 +62,7 @@ module.exports = {
 
 			console.log(splitArrayID);
 			var reminderUser = await interaction.client.users.cache.get(messageOwner);
+			var reminderGuildUser = await interaction.guild.members.cache.get(messageOwner);
 
 			var embeddedReminder = [];
 			var firstEmbed = true;
@@ -71,7 +72,10 @@ module.exports = {
 					embeddedReminder[i].setColor("#0099ff");
 					embeddedReminder[i].setTitle("Your Reminders:");
 					embeddedReminder[i].setAuthor({
-						name: `${reminderUser.tag}`,
+						name:
+							reminderGuildUser.displayName === reminderUser.username
+								? reminderUser.username
+								: `${reminderGuildUser.displayName} (${reminderUser.username})`,
 						iconURL: reminderUser.displayAvatarURL(),
 					});
 					embeddedReminder[i].setFooter({ text: `Page ${i + 1}` });
