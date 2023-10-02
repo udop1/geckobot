@@ -16,11 +16,16 @@ module.exports = {
 
 		const searches = await geniusClient.songs.search(queue.songs[0].name);
 
-		if (!searches) {
+		if (!searches || searches.length === 0) {
 			return await interaction.editReply({ content: "No lyrics found for this song" });
 		}
 
 		const lyrics = await searches[0].lyrics();
+
+		if (!lyrics) {
+			return await interaction.editReply({ content: "No lyrics found for this song" });
+		}
+
 		var splitArrLyrics = lyrics.match(/[\s\S]{1,4096}$/gm);
 
 		var lyricsEmbed = [];
