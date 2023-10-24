@@ -1,89 +1,110 @@
-function absoluteresolution(timedata) {
-	let currentDate = new Date();
-	let colon = 0;
-	let slashcount = 0;
+function absoluteresolution(options) {
+	const timedata = options.getString("time");
+	const datedata = options.getString("date");
+	const currentDate = new Date();
+	const now = new Date(currentDate.getTime());
 
-	for (let i = 0; i < timedata.length; i++) {
-		if (timedata[i] == "/") {
-			slashcount = slashcount + 1;
+	const timeRegex = /(\d{1,2}):(\d{2})/; //Matches 1 or 2 digits, before and after a colon.
+	const dateRegex = /(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/; //Matches 1 or 2 digits before a /, then 1/2 digits after the /, then 2-4 digits at the end
+
+	let hour = "00";
+	let minute = "00";
+
+	const timeMatch = timedata.match(timeRegex);
+	if (timeMatch) {
+		hour = timeMatch[1].padStart(2, "0");
+		minute = timeMatch[2];
+	}
+
+	const dateMatch = datedata.match(dateRegex);
+	if (dateMatch) {
+		let [, day, month, year] = dateMatch.map(Number);
+
+		if (!year) {
+			year = now.getFullYear();
+		} else if (year < 100) {
+			year += 2000; // Assume years less than 100 refer to the 21st century
 		}
+
+		const totalString = `${year}-${month.toString().padStart(2, "0")}-${day
+			.toString()
+			.padStart(2, "0")}T${hour}:${minute}:00`;
+
+		return Date.parse(totalString) / 1000;
 	}
 
-	for (let i = 0; i < timedata.length; i++) {
-		if (timedata[i] == ":") {
-			colon = i;
-		}
-	}
-	var hour = timedata.slice(colon - 2, colon).join("");
-	var minute = timedata.slice(colon + 1, colon + 3).join("");
+	const cDay = now.getDate();
+	const cMonth = (now.getMonth() + 1).toString().padStart(2, "0");
+	const cYear = now.getFullYear();
+	const totalString = `${cYear}-${cMonth}-${cDay}T${hour}:${minute}:00`;
 
-	if (slashcount == 0) {
-		let cDay = currentDate.getDate();
-		let cMonth = String(currentDate.getMonth() + 1);
-		if (cMonth.length == 1) {
-			cMonth = "0" + cMonth;
-		}
-		let cYear = currentDate.getFullYear();
-		let totalstring = `${cYear}-${cMonth}-${cDay}T${hour}:${minute}:00`;
-		return Date.parse(totalstring) / 1000;
-	}
-	let firstslash = 0;
-
-	if (slashcount == 1) {
-		var year = currentDate.getFullYear();
-	} else {
-		for (let i = 0; i < timedata.length; i++) {
-			if (timedata[i] == "/") {
-				firstslash = i;
-			}
-		}
-		var y = timedata.slice(firstslash + 1);
-		//console.log(y);
-		if (y.length >= 4) {
-			//console.log(y);
-			year = y.slice(0, 4).join("");
-		} else {
-			let x = String(timedata.slice(firstslash + 1, firstslash + 3).join(""));
-			year = Math.floor(currentDate.getFullYear() / 100) + x;
-		}
-	}
-
-	for (let i = 0; i < timedata.length; i++) {
-		if (timedata[i] == "/") {
-			firstslash = i;
-			break;
-		}
-	}
-
-	var day = timedata.slice(firstslash - 2, firstslash).join("");
-	if (day[0] == " ") {
-		day = "0" + day[1];
-	}
-	var month = timedata.slice(firstslash + 1, firstslash + 3).join("");
-
-	if (month[1] == "/") {
-		month = "0" + month[0];
-	}
-	//console.log(year);
-	let totalstring = `${year}-${month}-${day}T${hour}:${minute}:00`;
-	return Date.parse(totalstring) / 1000;
+	return Date.parse(totalString) / 1000;
 }
 
 function relativeresolution(timedata) {
+	const weekInput = timedata.getInteger("week") * 604800;
+	const dayInput = timedata.getInteger("day") * 86400;
+	const hourInput = timedata.getInteger("hour") * 3600;
+	const minuteInput = timedata.getInteger("minute") * 60;
+	const secondInput = timedata.getInteger("second");
+	const relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
+
 	var startTime = Math.trunc(new Date().getTime() / 1000);
 
-	for (var i = 0; i < timedata.length; i++) {
-		if (timedata[i] == null) {
-			timedata[i] = 0;
+	for (let i = 0; i < relativedata.length; i++) {
+		if (relativedata[i] == null) {
+			relativedata[i] = 0;
 		}
 	}
 
 	var unixdata = 0;
-	for (var x = 0; x < timedata.length; x++) {
-		unixdata += timedata[x];
+	for (let i = 0; i < relativedata.length; i++) {
+		if (relativedata[i] != null) {
+			unixdata += relativedata[i];
+		}
 	}
 
 	return unixdata + startTime;
+}
+
+function getRecurranceSum(timedata) {
+	const weekInput = timedata.getInteger("week") * 604800;
+	const dayInput = timedata.getInteger("day") * 86400;
+	const hourInput = timedata.getInteger("hour") * 3600;
+	const minuteInput = timedata.getInteger("minute") * 60;
+	const secondInput = timedata.getInteger("second");
+	const relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
+
+	var relativeSum = 0;
+	for (var i = 0; i < relativedata.length; i++) {
+		relativeSum += relativedata[i];
+	}
+	return relativeSum;
+}
+
+function generateMessage(endTime) {
+	const dateObject = new Date(endTime * 1000);
+	var endMonths = [
+		"January",
+		"February",
+		"March",
+		"April",
+		"May",
+		"June",
+		"July",
+		"August",
+		"September",
+		"October",
+		"November",
+		"December",
+	];
+	const endYear = dateObject.getFullYear();
+	const endMonth = endMonths[dateObject.getMonth()];
+	const endDate = ("0" + dateObject.getDate()).slice(-2);
+	const endHour = ("0" + dateObject.getHours()).slice(-2);
+	const endMin = ("0" + dateObject.getMinutes()).slice(-2);
+	const endSec = ("0" + dateObject.getSeconds()).slice(-2);
+	return `Your reminder for ${endDate} ${endMonth} ${endYear} at ${endHour}:${endMin}:${endSec} has been set!`;
 }
 
 const { SlashCommandBuilder } = require("discord.js");
@@ -146,98 +167,50 @@ module.exports = {
 
 	async execute(client, interaction) {
 		const { mysql } = require("../../index");
-		var startTime = Math.trunc(new Date().getTime() / 1000);
-		var channelIn = interaction.channel.id;
-		var reminder = interaction.options.getString("message");
-
-		var absolutedata =
-			interaction.options.getString("time") + " " + interaction.options.getString("date");
-		absolutedata = absolutedata.split("");
-
-		var weekInput = interaction.options.getInteger("week") * 604800;
-		var dayInput = interaction.options.getInteger("day") * 86400;
-		var hourInput = interaction.options.getInteger("hour") * 3600;
-		var minuteInput = interaction.options.getInteger("minute") * 60;
-		var secondInput = interaction.options.getInteger("second");
-		var relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
+		const startTime = Math.trunc(new Date().getTime() / 1000);
+		const channelIn = interaction.channel.id;
+		const reminder = interaction.options.getString("message");
 
 		var endTime, recurrenceSum;
 		if (interaction.options.getSubcommand() === "absolute") {
-			endTime = absoluteresolution(absolutedata);
+			endTime = absoluteresolution(interaction.options);
 			recurrenceSum = endTime - startTime;
 		} else if (interaction.options.getSubcommand() === "relative") {
-			endTime = relativeresolution(relativedata);
-
-			var relativeSum = 0;
-			for (var i = 0; i < relativedata.length; i++) {
-				relativeSum += relativedata[i];
-			}
-			recurrenceSum = relativeSum;
+			endTime = relativeresolution(interaction.options);
+			recurrenceSum = getRecurranceSum(interaction.options);
 		}
 
-		var isRecurring;
-		if (
-			interaction.options.getBoolean("recurring") == null ||
-			interaction.options.getBoolean("recurring") == false
-		) {
-			//If they don't enter, presume false
-			isRecurring = "false";
-		} else if (interaction.options.getBoolean("recurring") == true) {
-			isRecurring = "true";
-		}
+		const isRecurring = interaction.options.getBoolean("recurring") ? "true" : "false";
 
 		if (interaction.options.getBoolean("recurring") == true && endTime < startTime + 21600) {
 			return await interaction.reply({
 				content: "Your recurring reminder can't end before 6 hours.",
 				ephemeral: true,
 			});
-		} else {
-			try {
-				await interaction.reply({ content: "Your reminder is being added..." });
-				var message = await interaction.fetchReply();
-				mysql.query(
-					`INSERT INTO tbl_Reminders (username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring) VALUES (${mysql.escape(
-						interaction.user.id
-					)}, ${mysql.escape(reminder)}, ${mysql.escape(startTime)}, ${mysql.escape(
-						recurrenceSum
-					)}, ${mysql.escape(endTime)}, ${mysql.escape(channelIn)}, ${mysql.escape(
-						message.url
-					)}, ${mysql.escape(isRecurring)})`,
-					function (error) {
-						if (error) throw error;
-						console.log(`Reminder Added By: ${interaction.user.id}`);
-					}
-				);
+		}
 
-				var dateObject = new Date(endTime * 1000);
-				var endMonths = [
-					"January",
-					"February",
-					"March",
-					"April",
-					"May",
-					"June",
-					"July",
-					"August",
-					"September",
-					"October",
-					"November",
-					"December",
-				];
-				var endYear = dateObject.getFullYear();
-				var endMonth = endMonths[dateObject.getMonth()];
-				var endDate = ("0" + dateObject.getDate()).slice(-2);
-				var endHour = ("0" + dateObject.getHours()).slice(-2);
-				var endMin = ("0" + dateObject.getMinutes()).slice(-2);
-				var endSec = ("0" + dateObject.getSeconds()).slice(-2);
-
-				return await interaction.editReply({
-					content: `Your reminder for ${endDate} ${endMonth} ${endYear} at ${endHour}:${endMin}:${endSec} has been set!`,
-				});
-			} catch (error) {
-				console.log(error);
-				return await interaction.editReply({ content: `Error:\n\`${error}\`` });
-			}
+		try {
+			await interaction.reply({ content: "Your reminder is being added..." });
+			var message = await interaction.fetchReply();
+			mysql.query(
+				`INSERT INTO tbl_Reminders (username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring) VALUES (${mysql.escape(
+					interaction.user.id
+				)}, ${mysql.escape(reminder)}, ${mysql.escape(startTime)}, ${mysql.escape(
+					recurrenceSum
+				)}, ${mysql.escape(endTime)}, ${mysql.escape(channelIn)}, ${mysql.escape(
+					message.url
+				)}, ${mysql.escape(isRecurring)})`,
+				function (error) {
+					if (error) throw error;
+					console.log(`Reminder Added By: ${interaction.user.id}`);
+				}
+			);
+			return await interaction.editReply({
+				content: generateMessage(endTime),
+			});
+		} catch (error) {
+			console.log(error);
+			return await interaction.editReply({ content: `Error:\n\`${error}\`` });
 		}
 	},
 };
