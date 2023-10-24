@@ -93,7 +93,7 @@ module.exports = {
 								value: `**[Original Message](${finishedReminders.message_url})**`,
 							}
 						)
-						.setFooter({ text: "Time Set" })
+						.setFoo     ter({ text: "Time Set" })
 						.setTimestamp(Date.parse(time));
 
 					client.channels.cache.get(finishedReminders.channel_in).send({
