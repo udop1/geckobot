@@ -1,7 +1,6 @@
 function absoluteresolution(options) {
-	const timedata =
-			(options.getString("time") + " " + options.getString("date")).split("");
-
+	const timedata =options.getString("time");
+	const datedata = options.getString("date");
 	const currentDate = new Date();
 	const now = new Date(currentDate.getTime());
   
@@ -17,7 +16,7 @@ function absoluteresolution(options) {
 	  minute = timeMatch[2];
 	}
   
-	const dateMatch = timedata.match(dateRegex);
+	const dateMatch = datedata.match(dateRegex);
 	if (dateMatch) {
 	  let [_, day, month, year] = dateMatch.map(Number);
   
