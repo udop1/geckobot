@@ -112,7 +112,7 @@ module.exports = {
 					);
 				} else if (isRecurring == "true") {
 					embedReminder = new EmbedBuilder()
-						.setColor("#0099ff")
+						.setColor("#0099fe")
 						.setAuthor({
 							name:
 								reminderGuildUser.displayName === reminderUser.username
