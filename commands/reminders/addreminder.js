@@ -9,7 +9,7 @@ function absoluteresolution(options) {
   
 	let hour = '00';
 	let minute = '00';
-  
+	
 	const timeMatch = timedata.match(timeRegex);
 	if (timeMatch) {
 	  hour = timeMatch[1].padStart(2, '0');
@@ -78,7 +78,7 @@ function getRecurranceSum(timedata){
 	return relativeSum
 }
 
-function generateMessage(dateObject){
+function generateMessage(endTime){
 	const dateObject = new Date(endTime * 1000);
 	var endMonths = [
 		"January",
