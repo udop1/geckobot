@@ -1,7 +1,6 @@
 function absoluteresolution(options) {
 	const timedata =
-			options.getString("time") + " " + options.getString("date");
-	timedata = absolutedata.split("");
+			(options.getString("time") + " " + options.getString("date")).split("");
 
 	const currentDate = new Date();
 	const now = new Date(currentDate.getTime());
