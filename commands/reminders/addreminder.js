@@ -3,45 +3,47 @@ function absoluteresolution(options) {
 	const datedata = options.getString("date");
 	const currentDate = new Date();
 	const now = new Date(currentDate.getTime());
-  
+
 	const timeRegex = /(\d{1,2}):(\d{2})/; //Matches 1 or 2 digits, before and after a colon.
 	const dateRegex = /(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/; //Matches 1 or 2 digits before a /, then 1/2 digits after the /, then 2-4 digits at the end
-  
-	let hour = '00';
-	let minute = '00';
-	
+
+	let hour = "00";
+	let minute = "00";
+
 	const timeMatch = timedata.match(timeRegex);
 	if (timeMatch) {
-	  hour = timeMatch[1].padStart(2, '0');
-	  minute = timeMatch[2];
+		hour = timeMatch[1].padStart(2, "0");
+		minute = timeMatch[2];
 	}
-  
+
 	const dateMatch = datedata.match(dateRegex);
 	if (dateMatch) {
-	  let [, day, month, year] = dateMatch.map(Number);
-  
-	  if (!year) {
-		year = now.getFullYear();
-	  } else if (year < 100) {
-		year += 2000; // Assume years less than 100 refer to the 21st century
-	  }
-  
-	  const totalString = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T${hour}:${minute}:00`;
-  
-	  return Date.parse(totalString) / 1000;
+		let [, day, month, year] = dateMatch.map(Number);
+
+		if (!year) {
+			year = now.getFullYear();
+		} else if (year < 100) {
+			year += 2000; // Assume years less than 100 refer to the 21st century
+		}
+
+		const totalString = `${year}-${month.toString().padStart(2, "0")}-${day
+			.toString()
+			.padStart(2, "0")}T${hour}:${minute}:00`;
+
+		return Date.parse(totalString) / 1000;
 	}
-  
+
 	const cDay = now.getDate();
-	const cMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+	const cMonth = (now.getMonth() + 1).toString().padStart(2, "0");
 	const cYear = now.getFullYear();
 	const totalString = `${cYear}-${cMonth}-${cDay}T${hour}:${minute}:00`;
-  
+
 	return Date.parse(totalString) / 1000;
-  }
+}
 
 function relativeresolution(timedata) {
 	const weekInput = timedata.getInteger("week") * 604800;
-	const dayInput =  timedata.getInteger("day") * 86400;
+	const dayInput = timedata.getInteger("day") * 86400;
 	const hourInput = timedata.getInteger("hour") * 3600;
 	const minuteInput = timedata.getInteger("minute") * 60;
 	const secondInput = timedata.getInteger("second");
@@ -49,15 +51,15 @@ function relativeresolution(timedata) {
 
 	var startTime = Math.trunc(new Date().getTime() / 1000);
 
-	for (var i = 0; i < relativedata.length; i++) {
+	for (let i = 0; i < relativedata.length; i++) {
 		if (relativedata[i] == null) {
 			relativedata[i] = 0;
 		}
 	}
 
 	var unixdata = 0;
-	for (var i = 0; i < relativedata.length; i++) {
-		if (relativedata[i] != null){
+	for (let i = 0; i < relativedata.length; i++) {
+		if (relativedata[i] != null) {
 			unixdata += relativedata[i];
 		}
 	}
@@ -65,22 +67,22 @@ function relativeresolution(timedata) {
 	return unixdata + startTime;
 }
 
-function getRecurranceSum(timedata){
+function getRecurranceSum(timedata) {
 	const weekInput = timedata.getInteger("week") * 604800;
-	const dayInput =  timedata.getInteger("day") * 86400;
+	const dayInput = timedata.getInteger("day") * 86400;
 	const hourInput = timedata.getInteger("hour") * 3600;
 	const minuteInput = timedata.getInteger("minute") * 60;
 	const secondInput = timedata.getInteger("second");
 	const relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
 
 	var relativeSum = 0;
-			for (var i = 0; i < relativedata.length; i++) {
-				relativeSum += relativedata[i];
-			}
-	return relativeSum
+	for (var i = 0; i < relativedata.length; i++) {
+		relativeSum += relativedata[i];
+	}
+	return relativeSum;
 }
 
-function generateMessage(endTime){
+function generateMessage(endTime) {
 	const dateObject = new Date(endTime * 1000);
 	var endMonths = [
 		"January",
@@ -185,7 +187,7 @@ module.exports = {
 				content: "Your recurring reminder can't end before 6 hours.",
 				ephemeral: true,
 			});
-		} 
+		}
 
 		try {
 			await interaction.reply({ content: "Your reminder is being added..." });
@@ -210,6 +212,5 @@ module.exports = {
 			console.log(error);
 			return await interaction.editReply({ content: `Error:\n\`${error}\`` });
 		}
-		
 	},
 };
