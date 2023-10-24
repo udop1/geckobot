@@ -18,7 +18,7 @@ function absoluteresolution(options) {
   
 	const dateMatch = datedata.match(dateRegex);
 	if (dateMatch) {
-	  let [_, day, month, year] = dateMatch.map(Number);
+	  let [, day, month, year] = dateMatch.map(Number);
   
 	  if (!year) {
 		year = now.getFullYear();
