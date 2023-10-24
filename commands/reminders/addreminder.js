@@ -56,9 +56,9 @@ function relativeresolution(timedata) {
 	}
 
 	var unixdata = 0;
-	for (var x = 0; x < relativedata.length; x++) {
+	for (var i = 0; i < relativedata.length; i++) {
 		if (relativedata[i] != null){
-			unixdata += relativedata[x];
+			unixdata += relativedata[i];
 		}
 	}
 
