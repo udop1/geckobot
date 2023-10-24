@@ -1,5 +1,5 @@
 function absoluteresolution(options) {
-	const timedata =options.getString("time");
+	const timedata = options.getString("time");
 	const datedata = options.getString("date");
 	const currentDate = new Date();
 	const now = new Date(currentDate.getTime());
@@ -78,7 +78,7 @@ function getRecurranceSum(timedata){
 	return relativeSum
 }
 
-function generateMessage(dataObject){
+function generateMessage(dateObject){
 	const dateObject = new Date(endTime * 1000);
 	var endMonths = [
 		"January",
@@ -202,7 +202,7 @@ module.exports = {
 				}
 			);
 			return await interaction.editReply({
-				content: generateMessage(dateObject),
+				content: generateMessage(endTime),
 			});
 		} catch (error) {
 			console.log(error);
