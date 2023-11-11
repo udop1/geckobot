@@ -7,7 +7,7 @@ module.exports = {
 	async execute(queue, playlist) {
 		const embed = new EmbedBuilder()
 			.setDescription(
-				`New playlist to the queue\n**Playlist:** ${playlist.name} (${playlist.songs.length} songs)`
+				`New playlist to the queue\n**Playlist:** [${playlist.name}](${playlist.url}) (${playlist.songs.length} songs)`
 			)
 			.setFooter({
 				text: `Commanded by ${playlist.songs[0].user.tag}`,
