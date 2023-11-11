@@ -21,7 +21,6 @@ module.exports = {
 		const songId = interaction.options.getInteger("song-id");
 
 		try {
-			// await client.distube.jump(interaction.guild, songId).then(async (song) => {
 			await queue.jump(songId).then(async (song) => {
 				const skippedEmbed = new EmbedBuilder()
 					.setDescription(
