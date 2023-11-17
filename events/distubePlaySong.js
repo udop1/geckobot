@@ -209,7 +209,7 @@ module.exports = {
 					await queue.previous();
 
 					const skippedEmbed = new EmbedBuilder()
-						.setDescription("Skipping to the previus song.")
+						.setDescription("Skipping to the previous song.")
 						.setFooter({
 							text: `Commanded by ${int.user.tag}`,
 							iconURL: int.user.displayAvatarURL({ size: 1024 }),

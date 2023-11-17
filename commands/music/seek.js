@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const func = require("../../utils/utils");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -22,7 +21,7 @@ module.exports = {
 			await queue.seek(time);
 
 			const seekEmbed = new EmbedBuilder()
-				.setDescription(`Seeked to ${func.suffix(time)} second of the song.`)
+				.setDescription(`Seeked to ${time} second of the song.`)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
 					iconURL: interaction.user.displayAvatarURL({ size: 1024 }),

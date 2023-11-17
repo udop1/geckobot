@@ -11,7 +11,11 @@ module.exports = {
 		await interaction.deferReply();
 
 		try {
-			await queue.skip();
+			if (queue.songs.length <= 1) {
+				await queue.stop();
+			} else {
+				await queue.skip();
+			}
 
 			const skippedEmbed = new EmbedBuilder()
 				.setDescription("Skipping to the next song.")
