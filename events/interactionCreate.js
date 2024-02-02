@@ -28,7 +28,7 @@ module.exports = {
 		if (command.botVoice) {
 			if (!botVC) {
 				return await interaction.reply({
-					content: "I'm not connected to any Voice Chnanel.",
+					content: "I'm not connected to any Voice Channel.",
 					ephemeral: true,
 				});
 			}
