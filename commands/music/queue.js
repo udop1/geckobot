@@ -45,7 +45,11 @@ module.exports = {
 
 			for (let i = 0; n > i; i++) {
 				const queueEmbed = new EmbedBuilder()
-					.setTitle(`${interaction.guild.name}'s Queue [${i + 1}/${Math.ceil(n)}]`)
+					.setTitle(
+						`${interaction.guild.name}'s Queue (${queue.formattedDuration}) [${
+							i + 1
+						}/${Math.ceil(n)}]`
+					)
 					.setDescription(queueSongs.slice(i * 20, (i + 1) * 20).join("\n"))
 					.setFooter({
 						text: `Commanded by ${interaction.user.tag}`,
