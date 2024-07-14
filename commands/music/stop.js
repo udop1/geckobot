@@ -1,7 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-	data: new SlashCommandBuilder().setName("stop").setDescription("Stops the queue."),
+	data: new SlashCommandBuilder().setName('stop').setDescription('Stops the queue.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
@@ -12,8 +12,9 @@ module.exports = {
 
 		try {
 			await queue.stop();
+			await queue.voice.leave();
 
-			const stopEmbed = new EmbedBuilder().setDescription("Stopped playing.").setFooter({
+			const stopEmbed = new EmbedBuilder().setDescription('Stopped playing.').setFooter({
 				text: `Commanded by ${interaction.user.tag}`,
 				iconURL: interaction.user.displayAvatarURL({ size: 1024 }),
 			});
@@ -23,7 +24,7 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
+						? error.message.slice(0, 4093) + '...'
 						: error.message
 				)
 				.setFooter({

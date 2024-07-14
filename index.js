@@ -1,14 +1,16 @@
 //Setup dependencies
-const fs = require("fs");
-const path = require("path");
-const MySQL = require("mysql2");
-const { Client, Collection, GatewayIntentBits, REST, Routes } = require("discord.js");
-const { DisTube } = require("distube");
-const { SoundCloudPlugin } = require("@distube/soundcloud");
-const { SpotifyPlugin } = require("@distube/spotify");
-const { YtDlpPlugin } = require("@distube/yt-dlp");
-const { DeezerPlugin } = require("@distube/deezer");
-require("dotenv").config();
+const fs = require('fs');
+const path = require('path');
+const MySQL = require('mysql2');
+const { Client, Collection, GatewayIntentBits, REST, Routes } = require('discord.js');
+const { DisTube, isVoiceChannelEmpty } = require('distube');
+const { SoundCloudPlugin } = require('@distube/soundcloud');
+const { SpotifyPlugin } = require('@distube/spotify');
+const { YtDlpPlugin } = require('@distube/yt-dlp');
+const { DeezerPlugin } = require('@distube/deezer');
+const { YouTubePlugin } = require('@distube/youtube');
+const { DirectLinkPlugin } = require('@distube/direct-link');
+require('dotenv').config();
 
 //Initialise clients
 const client = new Client({
@@ -23,43 +25,43 @@ const client = new Client({
 });
 
 client.distube = new DisTube(client, {
-	plugins: [new SoundCloudPlugin(), new SpotifyPlugin(), new YtDlpPlugin(), new DeezerPlugin()],
+	plugins: [
+		new SoundCloudPlugin(),
+		new SpotifyPlugin(),
+		new YtDlpPlugin(),
+		new DeezerPlugin(),
+		new YouTubePlugin({
+			ytdlOptions: {
+				quality: 'highestaudio',
+				filter: 'audioonly',
+			},
+		}),
+		new DirectLinkPlugin(),
+	],
 	emitNewSongOnly: false,
-	leaveOnEmpty: true,
-	emptyCooldown: 10,
-	leaveOnFinish: true,
-	leaveOnStop: true,
 	savePreviousSongs: true,
-	searchSongs: 5,
-	searchCooldown: 60,
-	ytdlOptions: {
-		quality: "highestaudio",
-		filter: "audioonly",
-	},
 	nsfw: false,
 	emitAddListWhenCreatingQueue: true,
 	emitAddSongWhenCreatingQueue: true,
 	joinNewVoiceChannel: false,
-	streamType: 0,
-	directLink: true,
 });
 
 client.commands = new Collection();
 
 //Retrieve all commands
 const commands = [];
-const foldersPath = path.join(__dirname, "commands");
+const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
 for (const folder of commandFolders) {
 	const commandsPath = path.join(foldersPath, folder);
-	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith(".js"));
+	const commandFiles = fs.readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
 		const command = require(filePath);
 
-		if ("data" in command && "execute" in command) {
+		if ('data' in command && 'execute' in command) {
 			client.commands.set(command.data.name, command);
 			commands.push(command.data.toJSON());
 		} else {
@@ -102,8 +104,18 @@ module.exports.rest = rest;
 module.exports.Routes = Routes;
 
 //Event handlers
-const eventsPath = path.join(__dirname, "events");
-const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith(".js"));
+const eventsPath = path.join(__dirname, 'events');
+const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
+
+client.on('voiceStateUpdate', (oldState) => {
+	if (!oldState?.channel) return;
+
+	const voice = client.distube.voices.get(oldState);
+
+	if (voice && isVoiceChannelEmpty(oldState)) {
+		voice.leave();
+	}
+});
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);

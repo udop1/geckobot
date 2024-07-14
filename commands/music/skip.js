@@ -1,7 +1,7 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 
 module.exports = {
-	data: new SlashCommandBuilder().setName("skip").setDescription("Skips the current song."),
+	data: new SlashCommandBuilder().setName('skip').setDescription('Skips the current song.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
@@ -13,12 +13,13 @@ module.exports = {
 		try {
 			if (queue.songs.length <= 1) {
 				await queue.stop();
+				await queue.voice.leave();
 			} else {
 				await queue.skip();
 			}
 
 			const skippedEmbed = new EmbedBuilder()
-				.setDescription("Skipping to the next song.")
+				.setDescription('Skipping to the next song.')
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
 					iconURL: interaction.user.displayAvatarURL({ size: 1024 }),
@@ -29,7 +30,7 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
+						? error.message.slice(0, 4093) + '...'
 						: error.message
 				)
 				.setFooter({
