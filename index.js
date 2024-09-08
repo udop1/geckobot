@@ -4,10 +4,8 @@ const path = require('path');
 const MySQL = require('mysql2');
 const { Client, Collection, GatewayIntentBits, REST, Routes } = require('discord.js');
 const { DisTube, isVoiceChannelEmpty } = require('distube');
-const { SoundCloudPlugin } = require('@distube/soundcloud');
 const { SpotifyPlugin } = require('@distube/spotify');
 const { YtDlpPlugin } = require('@distube/yt-dlp');
-const { DeezerPlugin } = require('@distube/deezer');
 const { YouTubePlugin } = require('@distube/youtube');
 const { DirectLinkPlugin } = require('@distube/direct-link');
 require('dotenv').config();
@@ -26,10 +24,8 @@ const client = new Client({
 
 client.distube = new DisTube(client, {
 	plugins: [
-		new SoundCloudPlugin(),
 		new SpotifyPlugin(),
 		new YtDlpPlugin(),
-		new DeezerPlugin(),
 		new YouTubePlugin({
 			ytdlOptions: {
 				quality: 'highestaudio',
