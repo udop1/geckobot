@@ -25,7 +25,6 @@ const client = new Client({
 client.distube = new DisTube(client, {
 	plugins: [
 		new SpotifyPlugin(),
-		new YtDlpPlugin(),
 		new YouTubePlugin({
 			ytdlOptions: {
 				quality: 'highestaudio',
@@ -33,6 +32,7 @@ client.distube = new DisTube(client, {
 			},
 		}),
 		new DirectLinkPlugin(),
+		new YtDlpPlugin(),
 	],
 	emitNewSongOnly: false,
 	savePreviousSongs: true,
