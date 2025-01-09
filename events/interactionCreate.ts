@@ -1,13 +1,16 @@
-const { Events } = require("discord.js");
-const { client } = require("../index");
+import { BaseInteraction, Client, Events, GuildMember } from 'discord.js';
+import { CommandExport } from 'types/CommandTypes';
+import { EventExport } from 'types/EventTypes';
 
-module.exports = {
+const interactionCreateEvent: EventExport = {
 	name: Events.InteractionCreate,
-	async execute(interaction) {
+
+	async execute(client: Client, interaction: BaseInteraction) {
 		if (!interaction.isChatInputCommand()) return;
 
-		const command = interaction.client.commands.get(interaction.commandName);
-		const memberVC = interaction.member.voice.channel || null;
+		const command: CommandExport = interaction.client.commands.get(interaction.commandName);
+		const interactionMember = interaction.member as GuildMember;
+		const memberVC = interactionMember.voice.channel || null;
 		const botVC = interaction.guild.members.me.voice.channel || null;
 		const queue = client.distube.getQueue(interaction.guild) || null;
 
@@ -16,7 +19,7 @@ module.exports = {
 			return;
 		}
 
-		//Distube
+		// Distube
 		if (command.memberVoice) {
 			if (!memberVC) {
 				return await interaction.reply({
@@ -51,10 +54,11 @@ module.exports = {
 		}
 
 		try {
-			// await command.execute(interaction);
 			await command.execute(client, interaction, memberVC, botVC, queue);
 		} catch (error) {
 			console.error(`Error executing ${interaction.commandName}:\n${error}`);
 		}
 	},
 };
+
+export default interactionCreateEvent;

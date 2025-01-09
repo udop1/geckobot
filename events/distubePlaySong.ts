@@ -1,26 +1,33 @@
-const {
+import {
 	EmbedBuilder,
 	StringSelectMenuBuilder,
 	ActionRowBuilder,
 	ButtonBuilder,
 	ButtonStyle,
-} = require('discord.js');
+	VoiceChannel,
+	SelectMenuComponentOptionData,
+	StringSelectMenuInteraction,
+	GuildMember,
+} from 'discord.js';
+import { Events, Queue, RepeatMode, Song } from 'distube';
+import { EventExport } from 'types/EventTypes';
+import { numberWithCommas, queueStatus } from 'utils/utils';
 
-const func = require('../utils/utils');
-
-module.exports = {
-	name: 'playSong',
+const distubePlaySongEvent: EventExport = {
+	name: Events.PLAY_SONG,
 	distube: true,
 
-	async execute(queue, song) {
-		const voiceChannel = queue.distube.client.channels.cache.get(queue.voice.channelId);
+	async execute(queue: Queue, song: Song) {
+		const voiceChannel = queue.distube.client.channels.cache.get(
+			queue.voice.channelId,
+		) as VoiceChannel;
 		const voiceChannelMembers = voiceChannel.members.filter((member) => !member.user.bot);
 
 		const embed = new EmbedBuilder()
 			.setDescription(
 				`Now Playing **[${song.name} (${song.formattedDuration})](${song.url})** for ${
 					voiceChannelMembers.size
-				} ${voiceChannelMembers.size > 1 ? 'listeners' : 'listener'} in ${voiceChannel}`
+				} ${voiceChannelMembers.size > 1 ? 'listeners' : 'listener'} in ${voiceChannel}`,
 			)
 			.setThumbnail(song?.thumbnail)
 			.setFooter({
@@ -31,21 +38,21 @@ module.exports = {
 		if (song.views) {
 			embed.addFields({
 				name: '👀 Views:',
-				value: `${func.numberWithCommas(song.views)}`,
+				value: `${numberWithCommas(song.views)}`,
 				inline: true,
 			});
 		}
 		if (song.likes) {
 			embed.addFields({
 				name: '👍🏻 Likes:',
-				value: `${func.numberWithCommas(song.likes)}`,
+				value: `${numberWithCommas(song.likes)}`,
 				inline: true,
 			});
 		}
 		if (song.dislikes) {
 			embed.addFields({
 				name: '👎🏻 Dislikes:',
-				value: `${func.numberWithCommas(song.dislikes)}`,
+				value: `${numberWithCommas(song.dislikes)}`,
 				inline: true,
 			});
 		}
@@ -61,7 +68,7 @@ module.exports = {
 			.setCustomId('previous')
 			.setEmoji('⏮️')
 			.setStyle(ButtonStyle.Secondary);
-		const paunseUnpause = new ButtonBuilder()
+		const pauseUnpause = new ButtonBuilder()
 			.setCustomId('pauseUnpause')
 			.setEmoji('⏯️')
 			.setStyle(ButtonStyle.Secondary);
@@ -94,7 +101,7 @@ module.exports = {
 			.setEmoji('🔊')
 			.setStyle(ButtonStyle.Secondary);
 
-		const options = [];
+		const options: Array<SelectMenuComponentOptionData> = [];
 
 		for (const filter of Object.keys(queue.distube.filters)) {
 			options.push({
@@ -105,15 +112,15 @@ module.exports = {
 
 		filters.addOptions(options);
 
-		const row1 = new ActionRowBuilder().addComponents([filters]);
-		const row2 = new ActionRowBuilder().addComponents([
+		const row1 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents([filters]);
+		const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents([
 			loopSongToggle,
 			previousSong,
-			paunseUnpause,
+			pauseUnpause,
 			nextSong,
 			loopQueueToggle,
 		]);
-		const row3 = new ActionRowBuilder().addComponents([
+		const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents([
 			volumeDown,
 			backward,
 			stop,
@@ -126,17 +133,17 @@ module.exports = {
 			components: [row1, row2, row3],
 		});
 
-		const collector = await reply.createMessageComponentCollector({
+		const collector = reply.createMessageComponentCollector({
 			time: song.duration * 1000,
 		});
 
-		collector.on('collect', async (int) => {
-			const memberVC = int.member.voice.channel || null;
+		collector.on('collect', async (int: StringSelectMenuInteraction) => {
+			const memberVC = (int.member as GuildMember).voice.channel || null;
 			const botVC = int.guild.members.me.voice.channel || null;
 
 			if (memberVC && botVC && memberVC.id !== botVC.id) {
 				const inVoiceEmbed = new EmbedBuilder().setDescription(
-					"You aren't connected to my voice channel."
+					"You aren't connected to my voice channel.",
 				);
 
 				return await int.reply({
@@ -150,9 +157,9 @@ module.exports = {
 			try {
 				if (int.customId === 'filters') {
 					if (queue.filters.has(int.values[0])) {
-						await queue.filters.remove(int.values[0]);
+						queue.filters.remove(int.values[0]);
 					} else {
-						await queue.filters.add(int.values[0]);
+						queue.filters.add(int.values[0]);
 					}
 
 					await reply.edit({
@@ -163,7 +170,7 @@ module.exports = {
 						.setDescription(
 							`**Current Queue Filters:** \`${
 								queue.filters.names.join(', ') || 'OFF'
-							}\`\n\n${func.queueStatus(queue)}`
+							}\`\n\n${queueStatus(queue)}`,
 						)
 						.setFooter({
 							text: `Commanded by ${int.user.tag}`,
@@ -180,25 +187,34 @@ module.exports = {
 						2: 'queue',
 					};
 
-					let mode = 0;
+					let mode: RepeatMode = 0;
 
-					if (convertedLoopStates[currentLoopState] === 'off') {
+					if (
+						convertedLoopStates[currentLoopState] === 'off' ||
+						loopState !== convertedLoopStates[currentLoopState]
+					) {
 						if (loopState === 'song') mode = 1;
 						else if (loopState === 'queue') mode = 2;
-					} else {
-						if (loopState !== convertedLoopStates[currentLoopState]) {
-							if (loopState === 'song') mode = 1;
-							else if (loopState === 'queue') mode = 2;
-						}
 					}
 
-					mode = await queue.setRepeatMode(mode);
-					mode = mode ? (mode === 2 ? 'All Queue' : 'This Song') : 'OFF';
+					mode = queue.setRepeatMode(mode);
+					// mode = mode
+					// 	? mode === 2
+					// 		? RepeatMode.QUEUE
+					// 		: RepeatMode.SONG
+					// 	: RepeatMode.DISABLED;
+					if (mode) {
+						if (mode === 2) {
+							mode = RepeatMode.QUEUE;
+						} else {
+							mode = RepeatMode.SONG;
+						}
+					} else {
+						mode = RepeatMode.DISABLED;
+					}
 
 					const loopEmbed = new EmbedBuilder()
-						.setDescription(
-							`Loop mode changed to \`${mode}\`\n\n${func.queueStatus(queue)}`
-						)
+						.setDescription(`Loop mode changed to \`${mode}\`\n\n${queueStatus(queue)}`)
 						.setFooter({
 							text: `Commanded by ${int.user.tag}`,
 							iconURL: int.user.displayAvatarURL({ size: 1024 }),
@@ -217,12 +233,12 @@ module.exports = {
 
 					await int.editReply({ embeds: [skippedEmbed] });
 
-					return await collector.stop();
+					return collector.stop();
 				} else if (int.customId === 'pauseUnpause') {
 					if (queue.playing) {
-						await queue.pause();
+						queue.pause();
 					} else {
-						await queue.resume();
+						queue.resume();
 					}
 
 					const pauseUnpauseEmbed = new EmbedBuilder()
@@ -245,7 +261,7 @@ module.exports = {
 
 					await int.editReply({ embeds: [skippedEmbed] });
 
-					return await collector.stop();
+					return collector.stop();
 				} else if (int.customId.startsWith('vol')) {
 					const volumeUpDown = int.customId.split('-')[1];
 
@@ -254,7 +270,7 @@ module.exports = {
 
 					const volumeEmbed = new EmbedBuilder()
 						.setDescription(
-							`Volume changed to \`${queue.volume}\`\n\n${func.queueStatus(queue)}`
+							`Volume changed to \`${queue.volume}\`\n\n${queueStatus(queue)}`,
 						)
 						.setFooter({
 							text: `Commanded by ${int.user.tag}`,
@@ -266,7 +282,7 @@ module.exports = {
 					await queue.seek(queue.currentTime - 10);
 
 					const seekEmbed = new EmbedBuilder()
-						.setDescription(`Backwarded the song for 10 seconds.`)
+						.setDescription(`Rewound the song 10 seconds.`)
 						.setFooter({
 							text: `Commanded by ${int.user.tag}`,
 							iconURL: int.user.displayAvatarURL({ size: 1024 }),
@@ -275,7 +291,7 @@ module.exports = {
 					return await int.editReply({ embeds: [seekEmbed] });
 				} else if (int.customId === 'stop') {
 					await queue.stop();
-					await queue.voice.leave();
+					queue.voice.leave();
 
 					const stopEmbed = new EmbedBuilder()
 						.setDescription('Stopped playing.')
@@ -286,12 +302,12 @@ module.exports = {
 
 					await int.editReply({ embeds: [stopEmbed] });
 
-					return await collector.stop();
+					return collector.stop();
 				} else if (int.customId === 'forward') {
-					await queue.seek(queue.currentTime + 10);
+					queue.seek(queue.currentTime + 10);
 
 					const seekEmbed = new EmbedBuilder()
-						.setDescription(`forwarded the song for 10 seconds.`)
+						.setDescription(`Fast-Forwarded the song 10 seconds.`)
 						.setFooter({
 							text: `Commanded by ${int.user.tag}`,
 							iconURL: int.user.displayAvatarURL({ size: 1024 }),
@@ -304,7 +320,7 @@ module.exports = {
 					.setDescription(
 						error.message.length > 4096
 							? error.message.slice(0, 4093) + '...'
-							: error.message
+							: error.message,
 					)
 					.setFooter({
 						text: `Commanded by ${int.user.tag}`,
@@ -315,9 +331,11 @@ module.exports = {
 			}
 		});
 
-		collector.on('end', async (reason) => {
+		collector.on('end', async (reason: string) => {
 			if (['messageDelete', 'messageDeleteBulk'].includes(reason)) return;
 			await reply.edit({ components: [] }).catch(() => null);
 		});
 	},
 };
+
+export default distubePlaySongEvent;
