@@ -17,11 +17,22 @@
 	},
 	"homepage": "https://github.com/udop1/geckobot#readme",
 	"dependencies": {
-		"discord.js": "^14.19.3",
-		"dotenv": "^16.5.0",
-		"mysql2": "^3.14.1"
+		"@discordjs/opus": "^0.9.0",
+		"@discordjs/voice": "^0.18.0",
+		"@distube/direct-link": "^1.0.1",
+		"@distube/spotify": "^2.0.2",
+		"@distube/youtube": "^1.0.4",
+		"@distube/yt-dlp": "^2.0.1",
+		"discord.js": "^14.17.2",
+		"distube": "^5.0.4",
+		"genius-lyrics": "^4.4.7",
+		"mysql2": "^3.12.0",
+		"sodium-native": "^4.3.1",
+		"string-progressbar": "^1.0.4"
 	},
 	"devDependencies": {
-		"eslint": "^9.26.0"
+		"eslint": "^8.57.1",
+		"prettier": "^3.4.2",
+		"typescript": "^5.7.2"
 	}
 }
