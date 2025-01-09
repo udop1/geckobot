@@ -1,15 +1,27 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+import {
+	SlashCommandBuilder,
+	EmbedBuilder,
+	Client,
+	ChatInputCommandInteraction,
+	VoiceBasedChannel,
+} from 'discord.js';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
+const joinCommand: CommandExport = {
 	data: new SlashCommandBuilder()
-		.setName("join")
-		.setDescription("Joins to your current Voice Channel."),
+		.setName('join')
+		.setDescription('Joins to your current Voice Channel.'),
 	memberVoice: true,
 	botVoice: false,
 	sameVoice: true,
 	queueNeeded: false,
 
-	async execute(client, interaction, memberVC, botVC) {
+	async execute(
+		client: Client,
+		interaction: ChatInputCommandInteraction,
+		memberVC: VoiceBasedChannel,
+		botVC: VoiceBasedChannel,
+	) {
 		await interaction.deferReply();
 
 		if (memberVC && botVC && memberVC.id === botVC.id) {
@@ -38,8 +50,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -50,3 +62,5 @@ module.exports = {
 		}
 	},
 };
+
+export default joinCommand;

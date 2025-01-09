@@ -1,20 +1,22 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
-	data: new SlashCommandBuilder().setName("previous").setDescription("Plays previous song."),
+const previousCommand: CommandExport = {
+	data: new SlashCommandBuilder().setName('previous').setDescription('Plays previous song.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {
 			await queue.previous();
 
 			const skippedEmbed = new EmbedBuilder()
-				.setDescription("Skipping to the previus song.")
+				.setDescription('Swapping back to the previous song.')
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
 					iconURL: interaction.user.displayAvatarURL({ size: 1024 }),
@@ -25,8 +27,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -37,3 +39,5 @@ module.exports = {
 		}
 	},
 };
+
+export default previousCommand;

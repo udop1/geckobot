@@ -1,19 +1,21 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
+const skipCommand: CommandExport = {
 	data: new SlashCommandBuilder().setName('skip').setDescription('Skips the current song.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {
 			if (queue.songs.length <= 1) {
 				await queue.stop();
-				await queue.voice.leave();
+				queue.voice.leave();
 			} else {
 				await queue.skip();
 			}
@@ -31,7 +33,7 @@ module.exports = {
 				.setDescription(
 					error.message.length > 4096
 						? error.message.slice(0, 4093) + '...'
-						: error.message
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -42,3 +44,5 @@ module.exports = {
 		}
 	},
 };
+
+export default skipCommand;

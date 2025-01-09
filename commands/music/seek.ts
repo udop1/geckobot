@@ -1,24 +1,26 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
+const seekCommand: CommandExport = {
 	data: new SlashCommandBuilder()
-		.setName("seek")
-		.setDescription("Seeks the playing song.")
+		.setName('seek')
+		.setDescription('Seeks the playing song.')
 		.addIntegerOption((option) =>
-			option.setName("time").setDescription("Time in seconds.").setRequired(true)
+			option.setName('time').setDescription('Time in seconds.').setRequired(true),
 		),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
-		const time = interaction.options.getInteger("time");
+		const time = interaction.options.getInteger('time');
 
 		try {
-			await queue.seek(time);
+			queue.seek(time);
 
 			const seekEmbed = new EmbedBuilder()
 				.setDescription(`Seeked to ${time} second of the song.`)
@@ -32,8 +34,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -44,3 +46,5 @@ module.exports = {
 		}
 	},
 };
+
+export default seekCommand;

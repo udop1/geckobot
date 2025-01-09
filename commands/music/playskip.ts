@@ -1,26 +1,38 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+import {
+	SlashCommandBuilder,
+	EmbedBuilder,
+	Client,
+	ChatInputCommandInteraction,
+	VoiceBasedChannel,
+	GuildMember,
+} from 'discord.js';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
+const playskipCommand: CommandExport = {
 	data: new SlashCommandBuilder()
-		.setName("playtop")
-		.setDescription("Plays the song before other songs in the queue.")
+		.setName('playskip')
+		.setDescription('Plays the song and skips current song.')
 		.addStringOption((option) =>
 			option
-				.setName("query")
-				.setDescription("Enter song name or playlist list.")
-				.setRequired(true)
+				.setName('query')
+				.setDescription('Enter song name or playlist list.')
+				.setRequired(true),
 		),
 	memberVoice: true,
 	botVoice: false,
 	sameVoice: true,
 	queueNeeded: false,
 
-	async execute(client, interaction, memberVC) {
+	async execute(
+		client: Client,
+		interaction: ChatInputCommandInteraction,
+		memberVC: VoiceBasedChannel,
+	) {
 		await interaction.deferReply({ ephemeral: true });
 
-		const query = interaction.options.getString("query");
+		const query = interaction.options.getString('query');
 
-		const searchEmbed = new EmbedBuilder().setDescription("Searching...").setFooter({
+		const searchEmbed = new EmbedBuilder().setDescription('Searching...').setFooter({
 			text: `Commanded by ${interaction.user.tag}`,
 			iconURL: interaction.user.displayAvatarURL({ size: 1024 }),
 		});
@@ -29,9 +41,9 @@ module.exports = {
 
 		try {
 			await client.distube.play(memberVC, query, {
-				member: interaction.member,
+				member: interaction.member as GuildMember,
 				textChannel: interaction.channel,
-				position: 1,
+				skip: true,
 			});
 
 			await interaction.deleteReply();
@@ -39,8 +51,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -51,3 +63,5 @@ module.exports = {
 		}
 	},
 };
+
+export default playskipCommand;

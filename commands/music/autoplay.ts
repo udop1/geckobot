@@ -1,24 +1,26 @@
-const { EmbedBuilder, SlashCommandBuilder } = require("discord.js");
-const func = require("../../utils/utils");
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
+import { queueStatus } from 'utils/utils';
 
-module.exports = {
-	data: new SlashCommandBuilder().setName("autoplay").setDescription("Toggles auto play."),
+const autoplayCommand: CommandExport = {
+	data: new SlashCommandBuilder().setName('autoplay').setDescription('Toggles auto play.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {
-			const autoPlayState = await queue.toggleAutoplay();
+			const autoPlayState = queue.toggleAutoplay();
 
 			const autoplayEmbed = new EmbedBuilder()
 				.setDescription(
 					`Auto Play mode changed to \`${
-						autoPlayState ? "ON" : "OFF"
-					}\`\n\n${func.queueStatus(queue)}`
+						autoPlayState ? 'ON' : 'OFF'
+					}\`\n\n${queueStatus(queue)}`,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -30,8 +32,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -42,3 +44,5 @@ module.exports = {
 		}
 	},
 };
+
+export default autoplayCommand;

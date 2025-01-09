@@ -1,31 +1,33 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const func = require("../../utils/utils");
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
+import { queueStatus } from 'utils/utils';
 
-module.exports = {
+const volumeCommand: CommandExport = {
 	data: new SlashCommandBuilder()
-		.setName("volume")
-		.setDescription("Sets the player volume.")
+		.setName('volume')
+		.setDescription('Sets the player volume.')
 		.addIntegerOption((option) =>
 			option
-				.setName("volume")
-				.setDescription("Enter new volume value to set.")
-				.setRequired(true)
+				.setName('volume')
+				.setDescription('Enter new volume value to set.')
+				.setRequired(true),
 		),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
-		const volume = interaction.options.getInteger("volume");
+		const volume = interaction.options.getInteger('volume');
 
 		try {
-			await queue.setVolume(volume);
+			queue.setVolume(volume);
 
 			const volumeEmbed = new EmbedBuilder()
-				.setDescription(`Volume changed to \`${volume}\`\n\n${func.queueStatus(queue)}`)
+				.setDescription(`Volume changed to \`${volume}\`\n\n${queueStatus(queue)}`)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
 					iconURL: interaction.user.displayAvatarURL({ size: 1024 }),
@@ -36,8 +38,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -48,3 +50,5 @@ module.exports = {
 		}
 	},
 };
+
+export default volumeCommand;

@@ -1,13 +1,15 @@
-const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
-	data: new SlashCommandBuilder().setName("resume").setDescription("Resumes the current song."),
+const resumeCommand: CommandExport = {
+	data: new SlashCommandBuilder().setName('resume').setDescription('Resumes the current song.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		if (queue.playing) {
@@ -20,10 +22,10 @@ module.exports = {
 		}
 
 		try {
-			await queue.resume();
+			queue.resume();
 
 			const pauseEmbed = new EmbedBuilder()
-				.setDescription("Resumed the song for you.")
+				.setDescription('Resumed the song for you.')
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
 					iconURL: interaction.user.displayAvatarURL({ size: 1024 }),
@@ -34,8 +36,8 @@ module.exports = {
 			const errorEmbed = new EmbedBuilder()
 				.setDescription(
 					error.message.length > 4096
-						? error.message.slice(0, 4093) + "..."
-						: error.message
+						? error.message.slice(0, 4093) + '...'
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -46,3 +48,5 @@ module.exports = {
 		}
 	},
 };
+
+export default resumeCommand;

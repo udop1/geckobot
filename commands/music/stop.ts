@@ -1,18 +1,20 @@
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Queue } from 'distube';
+import { CommandExport } from 'types/CommandTypes';
 
-module.exports = {
+const stopCommand: CommandExport = {
 	data: new SlashCommandBuilder().setName('stop').setDescription('Stops the queue.'),
 	memberVoice: true,
 	botVoice: true,
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(client, interaction, memberVC, botVC, queue) {
+	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {
 			await queue.stop();
-			await queue.voice.leave();
+			queue.voice.leave();
 
 			const stopEmbed = new EmbedBuilder().setDescription('Stopped playing.').setFooter({
 				text: `Commanded by ${interaction.user.tag}`,
@@ -25,7 +27,7 @@ module.exports = {
 				.setDescription(
 					error.message.length > 4096
 						? error.message.slice(0, 4093) + '...'
-						: error.message
+						: error.message,
 				)
 				.setFooter({
 					text: `Commanded by ${interaction.user.tag}`,
@@ -36,3 +38,5 @@ module.exports = {
 		}
 	},
 };
+
+export default stopCommand;
