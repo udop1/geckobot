@@ -2,36 +2,43 @@ services:
     geckobot:
         build:
             context: .
-            dockerfile: Dockerfile
-        image: node:18-alpine
-        restart: always
-        command: sh -c "node ."
-        working_dir: /geckobotapp
+        image: node:23-alpine
+        restart: unless-stopped
+        depends_on:
+            - mysql
+            - phpmyadmin
         volumes:
-            - ./:/geckobotapp
+            - ./:/geckobot
         environment:
-            MYSQL_HOST: mysql
-            MYSQL_USER: root
-            MYSQL_PASSWORD: secret
-            MYSQL_DB: db_GeckoBot
+            MYSQL_HOST: ${HOST}
+            MYSQL_USER: ${USER}
+            MYSQL_PASSWORD: ${PASSWORD}
+            MYSQL_DB: ${DATABASE}
             TZ: Europe/London
+        env_file: .env
 
     mysql:
-        image: mysql:8.0
-        restart: always
+        image: mysql:9
+        restart: unless-stopped
         volumes:
-            - geckobotapp-mysql-data:/var/lib/mysql
+            - geckobot-data:/var/lib/mysql
         environment:
-            MYSQL_ROOT_PASSWORD: secret
-            MYSQL_DATABASE: db_GeckoBot
+            MYSQL_ROOT_PASSWORD: ${PASSWORD}
+            MYSQL_DATABASE: ${DATABASE}
+        env_file: .env
 
     phpmyadmin:
         image: phpmyadmin:5-apache
-        restart: always
+        restart: unless-stopped
         ports:
             - 8080:80
         environment:
-            - PMA_ARBITRARY=1
+            PMA_ARBITRARY: 1
+
+networks:
+    gecko-net:
+        external: true
 
 volumes:
-    geckobotapp-mysql-data:
+    geckobot-data:
+        external: false
