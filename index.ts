@@ -1,9 +1,11 @@
 // Setup dependencies
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 import MySQL, { Connection } from 'mysql2';
 import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { CommandExport } from 'types/CommandTypes';
+dotenv.config();
 
 // Initialise clients
 const client = new Client({
