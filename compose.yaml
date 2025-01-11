@@ -22,6 +22,7 @@ services:
         restart: unless-stopped
         volumes:
             - geckobot-data:/var/lib/mysql
+            - ./mysql-seed:/docker-entrypoint-initdb.d/
         environment:
             MYSQL_ROOT_PASSWORD: ${PASSWORD}
             MYSQL_DATABASE: ${DATABASE}
