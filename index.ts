@@ -1,6 +1,7 @@
 // Setup dependencies
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
 import MySQL, { Connection } from 'mysql2';
 import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
 import { DisTube, DisTubeVoice, isVoiceChannelEmpty } from 'distube';
@@ -9,6 +10,7 @@ import { YtDlpPlugin } from '@distube/yt-dlp';
 import { YouTubePlugin } from '@distube/youtube';
 import { DirectLinkPlugin } from '@distube/direct-link';
 import { CommandExport } from 'types/CommandTypes';
+dotenv.config();
 
 // Initialise clients
 const client = new Client({

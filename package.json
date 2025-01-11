@@ -24,6 +24,7 @@
 		"@distube/yt-dlp": "^2.0.1",
 		"discord.js": "^14.17.2",
 		"distube": "^5.0.4",
+		"dotenv": "^16.4.7",
 		"genius-lyrics": "^4.4.7",
 		"mysql2": "^3.12.0",
 		"opusscript": "^0.1.1",
