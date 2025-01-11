@@ -8,7 +8,7 @@ services:
             - mysql
             - phpmyadmin
         volumes:
-            - ./:/geckobot
+            - ./:/build
         environment:
             MYSQL_HOST: ${HOST}
             MYSQL_USER: ${USER}
@@ -36,7 +36,7 @@ services:
             PMA_ARBITRARY: 1
 
 networks:
-    gecko-net:
+    bridge:
         external: true
 
 volumes:
