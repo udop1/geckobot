@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { Connection } from 'mysql2/promise';
+import { mysqlConnection } from 'index';
 import { CommandExport } from 'types/CommandTypes';
 
 const viewremindersCommand: CommandExport = {
@@ -7,27 +7,11 @@ const viewremindersCommand: CommandExport = {
 		.setName('viewreminders')
 		.setDescription('View all your created reminders'),
 
-	async execute(interaction: ChatInputCommandInteraction, mysql: Connection) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 		const messageOwner = interaction.user.id;
 
 		try {
-			// const getAllReminders = () => {
-			// 	let promise = new Promise(function (resolve) {
-			// 		setTimeout(function () {
-			// 			mysql.query(
-			// 				`SELECT reminder_id, reminder, start_time, end_duration, message_url, is_recurring FROM tbl_Reminders WHERE username = ${mysql.escape(
-			// 					messageOwner
-			// 				)} ORDER BY end_duration`,
-			// 				function (error, result) {
-			// 					if (error) throw error;
-			// 					resolve(result);
-			// 				}
-			// 			);
-			// 		}, 1000);
-			// 	});
-			// 	return promise;
-			// };
 			const getAllReminders = async () => {
 				try {
 					const getRemindersQuery = `SELECT reminder_id, reminder, start_time, end_duration, message_url, is_recurring
@@ -36,7 +20,9 @@ const viewremindersCommand: CommandExport = {
 					ORDER BY end_duration`;
 					const getRemindersValues = [messageOwner];
 
-					const [result] = await mysql.query(getRemindersQuery, getRemindersValues);
+					const [result] = await (
+						await mysqlConnection
+					).query(getRemindersQuery, getRemindersValues);
 
 					return result[0];
 				} catch (error) {
@@ -54,27 +40,6 @@ const viewremindersCommand: CommandExport = {
 			const reminderArrayEnd = findReminders.map((t: any) => t.end_duration);
 			const reminderArrayURL = findReminders.map((t: any) => t.message_url);
 			const reminderArrayRecurring = findReminders.map((t: any) => t.is_recurring);
-
-			// const splitArrayID = new Array(Math.ceil(reminderArrayID.length / nthAmount))
-			// 	.fill()
-			// 	.map(() => reminderArrayID.splice(0, nthAmount));
-			// const splitArrayReminder = new Array(Math.ceil(reminderArrayReminder.length / nthAmount))
-			// 	.fill()
-			// 	.map(() => reminderArrayReminder.splice(0, nthAmount));
-			// const splitArrayStart = new Array(Math.ceil(reminderArrayStart.length / nthAmount))
-			// 	.fill()
-			// 	.map(() => reminderArrayStart.splice(0, nthAmount));
-			// const splitArrayEnd = new Array(Math.ceil(reminderArrayEnd.length / nthAmount))
-			// 	.fill()
-			// 	.map(() => reminderArrayEnd.splice(0, nthAmount));
-			// const splitArrayURL = new Array(Math.ceil(reminderArrayURL.length / nthAmount))
-			// 	.fill()
-			// 	.map(() => reminderArrayURL.splice(0, nthAmount));
-			// const splitArrayRecurring = new Array(
-			// 	Math.ceil(reminderArrayRecurring.length / nthAmount),
-			// )
-			// 	.fill()
-			// 	.map(() => reminderArrayRecurring.splice(0, nthAmount));
 
 			const splitArrayID = Array.from(
 				{ length: Math.ceil(reminderArrayID.length / nthAmount) },

@@ -9,6 +9,10 @@ export interface EventExport {
 	execute: any;
 }
 
+export interface EventModule {
+	default: EventExport;
+}
+
 // Type for finished reminders
 export interface FinishedReminders {
 	reminder_id: number;

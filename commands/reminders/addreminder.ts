@@ -119,7 +119,7 @@ import {
 	CommandInteractionOptionResolver,
 	CacheType,
 } from 'discord.js';
-import { Connection } from 'mysql2/promise';
+import { mysqlConnection } from 'index';
 import { CommandExport } from 'types/CommandTypes';
 
 const addreminderCommand: CommandExport = {
@@ -178,7 +178,7 @@ const addreminderCommand: CommandExport = {
 				),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction, mysql: Connection) {
+	async execute(interaction: ChatInputCommandInteraction) {
 		const startTime = Math.trunc(new Date().getTime() / 1000);
 		const channelIn = interaction.channel.id;
 		const reminder = interaction.options.getString('message');
@@ -204,19 +204,6 @@ const addreminderCommand: CommandExport = {
 		try {
 			await interaction.reply({ content: 'Your reminder is being added...' });
 			const message = await interaction.fetchReply();
-			// mysql.query(
-			// 	`INSERT INTO tbl_Reminders (username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring) VALUES (${mysql.escape(
-			// 		interaction.user.id,
-			// 	)}, ${mysql.escape(reminder)}, ${mysql.escape(startTime)}, ${mysql.escape(
-			// 		recurrenceSum,
-			// 	)}, ${mysql.escape(endTime)}, ${mysql.escape(channelIn)}, ${mysql.escape(
-			// 		message.url,
-			// 	)}, ${mysql.escape(isRecurring)})`,
-			// 	function (error) {
-			// 		if (error) throw error;
-			// 		console.log(`Reminder Added By: ${interaction.user.id}`);
-			// 	},
-			// );
 			const insertQuery = `INSERT INTO tbl_Reminders (username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring)
 			VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
 			const insertValues = [
@@ -230,7 +217,7 @@ const addreminderCommand: CommandExport = {
 				isRecurring,
 			];
 
-			await mysql.query(insertQuery, insertValues);
+			await (await mysqlConnection).query(insertQuery, insertValues);
 
 			return await interaction.editReply({
 				content: generateMessage(endTime),

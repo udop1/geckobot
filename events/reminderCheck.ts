@@ -1,29 +1,13 @@
 import { Client, Events, EmbedBuilder, GuildMember, ChannelType } from 'discord.js';
-import { Connection } from 'mysql2/promise';
+import { mysqlConnection } from 'index';
 import { EventExport, FinishedReminders } from 'types/EventTypes';
 
 const reminderCheckEvent: EventExport = {
 	name: Events.ClientReady,
 
-	async execute(client: Client, mysql: Connection) {
+	async execute(client: Client) {
 		setInterval(async () => {
 			// Check reminders
-			// const getFinishedReminders = () => {
-			// 	let promise = new Promise((resolve) => {
-			// 		setTimeout(() => {
-			// 			mysql.query(
-			// 				`SELECT reminder_id, username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring FROM tbl_Reminders WHERE ${mysql.escape(
-			// 					currentTime
-			// 				)} >= end_duration ORDER BY end_duration LIMIT 1`,
-			// 				(error, result) => {
-			// 					if (error) throw error;
-			// 					resolve(result[0]);
-			// 				}
-			// 			);
-			// 		}, 1000);
-			// 	});
-			// 	return promise;
-			// };
 			const getFinishedReminders = async () => {
 				try {
 					const getRemindersQuery = `SELECT reminder_id, username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring
@@ -33,7 +17,9 @@ const reminderCheckEvent: EventExport = {
 					LIMIT 1`;
 					const currentTime = new Date().getTime() / 1000;
 
-					const [result] = await mysql.query(getRemindersQuery, [currentTime]);
+					const [result] = await (
+						await mysqlConnection
+					).query(getRemindersQuery, [currentTime]);
 
 					return result[0];
 				} catch (error) {
@@ -111,10 +97,6 @@ const reminderCheckEvent: EventExport = {
 						.setFooter({ text: 'Time Set' })
 						.setTimestamp(Date.parse(time));
 
-					// client.channels.cache.get(finishedReminders.channel_in).send({
-					// 	content: `<@${finishedReminders.username}>,\n`,
-					// 	embeds: [embedReminder] /*, components: [buttonRow]*/,
-					// });
 					const channel = client.channels.cache.get(finishedReminders.channel_in);
 					if (channel.type === ChannelType.GuildText) {
 						channel.send({
@@ -123,21 +105,12 @@ const reminderCheckEvent: EventExport = {
 						});
 					}
 
-					// mysql.query(
-					// 	`DELETE FROM tbl_Reminders WHERE reminder_id = ${mysql.escape(
-					// 		finishedReminders.reminder_id,
-					// 	)}`,
-					// 	function (error) {
-					// 		if (error) throw error;
-					// 		console.log(`Reminder ID Ended: ${finishedReminders.reminder_id}`);
-					// 	},
-					// );
 					try {
 						const deleteQuery = `DELETE FROM tbl_Reminders
 						WHERE reminder_id = ?`;
 						const deleteValues = [finishedReminders.reminder_id];
 
-						await mysql.query(deleteQuery, deleteValues);
+						await (await mysqlConnection).query(deleteQuery, deleteValues);
 
 						console.log(`Reminder ID Ended: ${finishedReminders.reminder_id}`);
 					} catch (error) {
@@ -166,10 +139,6 @@ const reminderCheckEvent: EventExport = {
 						.setFooter({ text: 'Time Set' })
 						.setTimestamp(Date.parse(time));
 
-					// client.channels.cache.get(finishedReminders.channel_in).send({
-					// 	content: `<@${finishedReminders.username}>,\n`,
-					// 	embeds: [embedReminder],
-					// });
 					const channel = client.channels.cache.get(finishedReminders.channel_in);
 					if (channel.type === ChannelType.GuildText) {
 						channel.send({
@@ -178,17 +147,6 @@ const reminderCheckEvent: EventExport = {
 						});
 					}
 
-					// mysql.query(
-					// 	`UPDATE tbl_Reminders SET start_time = ${mysql.escape(
-					// 		Math.trunc(new Date().getTime() / 1000),
-					// 	)}, end_duration = ${mysql.escape(
-					// 		recurringTime,
-					// 	)} WHERE reminder_id = ${mysql.escape(finishedReminders.reminder_id)}`,
-					// ),
-					// 	(error) => {
-					// 		if (error) throw error;
-					// 		console.log(`Reminder ID Recurred: ${finishedReminders.reminder_id}`);
-					// 	};
 					try {
 						const updateReminderQuery = `UPDATE tbl_Reminders
 						SET start_time = ?, end_duration = ?
@@ -199,7 +157,9 @@ const reminderCheckEvent: EventExport = {
 							finishedReminders.reminder_id,
 						];
 
-						await mysql.query(updateReminderQuery, updateReminderValues);
+						await (
+							await mysqlConnection
+						).query(updateReminderQuery, updateReminderValues);
 
 						console.log(`Reminder ID Recurred: ${finishedReminders.reminder_id}`);
 					} catch (error) {

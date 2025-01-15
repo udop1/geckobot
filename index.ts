@@ -2,13 +2,14 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import MySQL, { Connection } from 'mysql2';
+import MySQL, { Connection, ConnectionOptions } from 'mysql2/promise';
 import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
-import { CommandExport } from 'types/CommandTypes';
+import { CommandModule } from 'types/CommandTypes';
+import { EventModule } from 'types/EventTypes';
 dotenv.config();
 
 // Initialise clients
-const client = new Client({
+export const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildPresences,
@@ -31,7 +32,8 @@ for (const folder of commandFolders) {
 
 	for (const file of commandFiles) {
 		const filePath = path.join(commandsPath, file);
-		const command: CommandExport = require(filePath);
+		const commandModule: CommandModule = require(filePath);
+		const command = commandModule.default;
 
 		if ('data' in command && 'execute' in command) {
 			client.commands.set(command.data.name, command);
@@ -45,7 +47,7 @@ for (const folder of commandFolders) {
 }
 
 // Update all commands
-const rest: REST = new REST().setToken(process.env.TOKEN);
+export const rest: REST = new REST().setToken(process.env.TOKEN);
 (async () => {
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
@@ -62,18 +64,13 @@ const rest: REST = new REST().setToken(process.env.TOKEN);
 })();
 
 // Database connection
-const mysql: Connection = MySQL.createConnection({
+const mysqlOptions: ConnectionOptions = {
 	host: `${process.env.HOST}`,
 	user: `${process.env.USER}`,
 	password: `${process.env.PASSWORD}`,
 	database: `${process.env.DATABASE}`,
-});
-
-// Exports
-// module.exports.client = client;
-// module.exports.mysql = mysql;
-// module.exports.rest = rest;
-// module.exports.Routes = Routes;
+};
+export const mysqlConnection: Promise<Connection> = MySQL.createConnection(mysqlOptions);
 
 // Event handlers
 const eventsPath = path.join(__dirname, 'events');
@@ -81,12 +78,13 @@ const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.j
 
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
-	const event = require(filePath);
+	const eventModule: EventModule = require(filePath);
+	const event: any = eventModule.default;
 
 	if (event.once) {
-		client.once(event.name, (...args) => event.execute(...args));
+		client.once(event.name, (...args: any) => event.execute(...args));
 	} else {
-		client.on(event.name, (...args) => event.execute(...args));
+		client.on(event.name, (...args: any) => event.execute(...args));
 	}
 }
 
