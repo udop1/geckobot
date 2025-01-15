@@ -1,8 +1,8 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { Queue } from 'distube';
-import Genius from 'genius-lyrics';
-import { CommandExport } from 'types/CommandTypes';
-const geniusClient = new Genius.Client();
+import { Client } from 'genius-lyrics';
+import { CommandExport } from 'types/CommandTypes.js';
+const geniusClient = new Client();
 
 const lyricsCommand: CommandExport = {
 	data: new SlashCommandBuilder()

@@ -12,3 +12,7 @@ export interface CommandExport {
 	queueNeeded?: boolean;
 	execute: any;
 }
+
+export interface CommandModule {
+	default: CommandExport;
+}

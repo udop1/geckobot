@@ -1,14 +1,15 @@
-import { BaseInteraction, Client, Events, GuildMember } from 'discord.js';
+import { Client, CommandInteraction, Events, GuildMember } from 'discord.js';
 import { CommandExport } from 'types/CommandTypes';
 import { EventExport } from 'types/EventTypes';
 
 const interactionCreateEvent: EventExport = {
 	name: Events.InteractionCreate,
 
-	async execute(client: Client, interaction: BaseInteraction) {
-		if (!interaction.isChatInputCommand()) return;
+	async execute(...args: any) {
+		const interaction: CommandInteraction = args[0];
+		const client: Client = args[0].client;
 
-		const command: CommandExport = interaction.client.commands.get(interaction.commandName);
+		const command: CommandExport = client.commands.get(interaction.commandName);
 		const interactionMember = interaction.member as GuildMember;
 		const memberVC = interactionMember.voice.channel || null;
 		const botVC = interaction.guild.members.me.voice.channel || null;
