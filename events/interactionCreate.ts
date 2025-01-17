@@ -6,8 +6,10 @@ const interactionCreateEvent: EventExport = {
 	name: Events.InteractionCreate,
 
 	async execute(...args: any) {
-		const interaction: CommandInteraction = args[0];
-		const client: Client = args[0].client;
+		const interaction = args.find((item: any): item is CommandInteraction => {
+			return item instanceof CommandInteraction;
+		});
+		const client: Client = interaction.client;
 
 		const command: CommandExport = interaction.client.commands.get(interaction.commandName);
 
