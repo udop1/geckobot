@@ -178,7 +178,10 @@ const addreminderCommand: CommandExport = {
 				),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(...args: any) {
+		const interaction = args.find((item: any): item is ChatInputCommandInteraction => {
+			return item instanceof ChatInputCommandInteraction;
+		});
 		const startTime = Math.trunc(new Date().getTime() / 1000);
 		const channelIn = interaction.channel.id;
 		const reminder = interaction.options.getString('message');
