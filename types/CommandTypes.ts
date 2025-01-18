@@ -16,3 +16,12 @@ export interface CommandExport {
 export interface CommandModule {
 	default: CommandExport;
 }
+
+export interface AllReminders {
+	reminder_id: number;
+	reminder: string;
+	start_time: number;
+	end_duration: number;
+	message_url: string;
+	is_recurring: string;
+}

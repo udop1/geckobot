@@ -10,7 +10,10 @@ const deletereminderCommand: CommandExport = {
 			option.setName('id').setDescription('Reminder ID').setRequired(true),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(...args: any) {
+		const interaction = args.find((item: any): item is ChatInputCommandInteraction => {
+			return item instanceof ChatInputCommandInteraction;
+		});
 		await interaction.deferReply();
 
 		const messageOwner = interaction.user.id;
@@ -24,7 +27,7 @@ const deletereminderCommand: CommandExport = {
 
 			const [result] = await (await mysqlConnection).query(deleteQuery, deleteValues);
 
-			if (result[0].affectedRows == 0) {
+			if (result.affectedRows == 0) {
 				return interaction.editReply({
 					content: "You don't have a reminder with that ID.",
 				});
