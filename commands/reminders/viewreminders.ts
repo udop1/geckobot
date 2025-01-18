@@ -1,13 +1,16 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { mysqlConnection } from 'index';
-import { CommandExport } from 'types/CommandTypes';
+import { AllReminders, CommandExport } from 'types/CommandTypes';
 
 const viewremindersCommand: CommandExport = {
 	data: new SlashCommandBuilder()
 		.setName('viewreminders')
 		.setDescription('View all your created reminders'),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(...args: any) {
+		const interaction = args.find((item: any): item is ChatInputCommandInteraction => {
+			return item instanceof ChatInputCommandInteraction;
+		});
 		await interaction.deferReply();
 		const messageOwner = interaction.user.id;
 
@@ -24,14 +27,14 @@ const viewremindersCommand: CommandExport = {
 						await mysqlConnection
 					).query(getRemindersQuery, getRemindersValues);
 
-					return result[0];
+					return result;
 				} catch (error) {
 					console.error(`Error fetching reminders: ${error}`);
 
 					throw error;
 				}
 			};
-			const findReminders = await getAllReminders();
+			const findReminders: Array<AllReminders> = await getAllReminders();
 
 			const nthAmount = 9; //How many reminders per page (max per embed: 25)
 			const reminderArrayID = findReminders.map((t: any) => t.reminder_id);
