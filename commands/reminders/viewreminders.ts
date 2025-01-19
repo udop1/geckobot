@@ -8,9 +8,11 @@ const viewremindersCommand: CommandExport = {
 		.setDescription('View all your created reminders'),
 
 	async execute(...args: any) {
-		const interaction = args.find((item: any): item is ChatInputCommandInteraction => {
-			return item instanceof ChatInputCommandInteraction;
-		});
+		const interaction: ChatInputCommandInteraction = args.find(
+			(item: any): item is ChatInputCommandInteraction => {
+				return item instanceof ChatInputCommandInteraction;
+			},
+		);
 		await interaction.deferReply();
 		const messageOwner = interaction.user.id;
 

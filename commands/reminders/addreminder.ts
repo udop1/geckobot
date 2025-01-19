@@ -118,6 +118,7 @@ import {
 	ChatInputCommandInteraction,
 	CommandInteractionOptionResolver,
 	CacheType,
+	MessageFlags,
 } from 'discord.js';
 import { mysqlConnection } from 'index';
 import { CommandExport } from 'types/CommandTypes';
@@ -179,9 +180,11 @@ const addreminderCommand: CommandExport = {
 		),
 
 	async execute(...args: any) {
-		const interaction = args.find((item: any): item is ChatInputCommandInteraction => {
-			return item instanceof ChatInputCommandInteraction;
-		});
+		const interaction: ChatInputCommandInteraction = args.find(
+			(item: any): item is ChatInputCommandInteraction => {
+				return item instanceof ChatInputCommandInteraction;
+			},
+		);
 		const startTime = Math.trunc(new Date().getTime() / 1000);
 		const channelIn = interaction.channel.id;
 		const reminder = interaction.options.getString('message');
@@ -200,7 +203,7 @@ const addreminderCommand: CommandExport = {
 		if (interaction.options.getBoolean('recurring') && endTime < startTime + 21600) {
 			return await interaction.reply({
 				content: "Your recurring reminder can't end before 6 hours.",
-				ephemeral: true,
+				flags: MessageFlags.Ephemeral,
 			});
 		}
 

@@ -8,6 +8,7 @@ import {
 	MessageActionRowComponentBuilder,
 	GuildMember,
 	StringSelectMenuInteraction,
+	MessageFlags,
 } from 'discord.js';
 import { Queue } from 'distube';
 import { CommandExport } from 'types/CommandTypes';
@@ -118,7 +119,7 @@ const queueCommand: CommandExport = {
 				)
 					return await int.reply({
 						content: `This button is only works for ${interaction.user.tag}`,
-						ephemeral: true,
+						flags: MessageFlags.Ephemeral,
 					});
 
 				if (int.customId !== 'messageDelete') collector.resetTimer();

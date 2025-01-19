@@ -25,3 +25,9 @@ export interface AllReminders {
 	message_url: string;
 	is_recurring: string;
 }
+
+export interface AllReleases {
+	release_name: string;
+	release_date: string;
+	release_date_sort: string;
+}
