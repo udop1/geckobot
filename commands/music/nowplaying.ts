@@ -3,6 +3,7 @@ import {
 	EmbedBuilder,
 	ChatInputCommandInteraction,
 	VoiceBasedChannel,
+	Client,
 } from 'discord.js';
 import { Queue } from 'distube';
 import progressBar from 'string-progressbar';
@@ -19,6 +20,7 @@ const nowplayingCommand: CommandExport = {
 	queueNeeded: true,
 
 	async execute(
+		client: Client,
 		interaction: ChatInputCommandInteraction,
 		botVC: VoiceBasedChannel,
 		queue: Queue,
