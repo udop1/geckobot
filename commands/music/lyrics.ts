@@ -1,8 +1,8 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
 import { Queue } from 'distube';
-import { Client } from 'genius-lyrics';
+import { Client as GeniusClient } from 'genius-lyrics';
 import { CommandExport } from 'types/CommandTypes.js';
-const geniusClient = new Client();
+const geniusClient = new GeniusClient();
 
 const lyricsCommand: CommandExport = {
 	data: new SlashCommandBuilder()
@@ -13,7 +13,7 @@ const lyricsCommand: CommandExport = {
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
+	async execute(client: Client, interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		const searches = await geniusClient.songs.search(queue.songs[0].name);

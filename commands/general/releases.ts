@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
 import { mysqlConnection } from 'index';
 import { AllReleases, CommandExport } from 'types/CommandTypes';
 
@@ -7,12 +7,7 @@ const releasesCommand: CommandExport = {
 		.setName('releases')
 		.setDescription('See all movie/TV release dates'),
 
-	async execute(...args: any) {
-		const interaction: ChatInputCommandInteraction = args.find(
-			(item: any): item is ChatInputCommandInteraction => {
-				return item instanceof ChatInputCommandInteraction;
-			},
-		);
+	async execute(client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 
 		try {

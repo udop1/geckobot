@@ -9,6 +9,7 @@ import {
 	GuildMember,
 	StringSelectMenuInteraction,
 	MessageFlags,
+	Client,
 } from 'discord.js';
 import { Queue } from 'distube';
 import { CommandExport } from 'types/CommandTypes';
@@ -36,7 +37,7 @@ const queueCommand: CommandExport = {
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
+	async execute(client: Client, interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 		const queuePos = interaction.options.getInteger('position');
 

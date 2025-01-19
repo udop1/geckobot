@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
 import { Queue } from 'distube';
 import { CommandExport } from 'types/CommandTypes';
 
@@ -9,7 +9,7 @@ const shuffleCommand: CommandExport = {
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
+	async execute(client: Client, interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {

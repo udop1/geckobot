@@ -116,6 +116,7 @@ function generateMessage(endTime: number) {
 import {
 	SlashCommandBuilder,
 	ChatInputCommandInteraction,
+	Client,
 	CommandInteractionOptionResolver,
 	CacheType,
 	MessageFlags,
@@ -179,12 +180,7 @@ const addreminderCommand: CommandExport = {
 				),
 		),
 
-	async execute(...args: any) {
-		const interaction: ChatInputCommandInteraction = args.find(
-			(item: any): item is ChatInputCommandInteraction => {
-				return item instanceof ChatInputCommandInteraction;
-			},
-		);
+	async execute(client: Client, interaction: ChatInputCommandInteraction) {
 		const startTime = Math.trunc(new Date().getTime() / 1000);
 		const channelIn = interaction.channel.id;
 		const reminder = interaction.options.getString('message');

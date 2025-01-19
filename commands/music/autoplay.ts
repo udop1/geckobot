@@ -1,4 +1,4 @@
-import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { EmbedBuilder, SlashCommandBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
 import { Queue } from 'distube';
 import { CommandExport } from 'types/CommandTypes';
 import { queueStatus } from 'utils/utils';
@@ -10,7 +10,7 @@ const autoplayCommand: CommandExport = {
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
+	async execute(client: Client, interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {

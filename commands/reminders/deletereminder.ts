@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
 import { mysqlConnection } from 'index';
 import { CommandExport } from 'types/CommandTypes';
 
@@ -10,12 +10,7 @@ const deletereminderCommand: CommandExport = {
 			option.setName('id').setDescription('Reminder ID').setRequired(true),
 		),
 
-	async execute(...args: any) {
-		const interaction: ChatInputCommandInteraction = args.find(
-			(item: any): item is ChatInputCommandInteraction => {
-				return item instanceof ChatInputCommandInteraction;
-			},
-		);
+	async execute(client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 
 		const messageOwner = interaction.user.id;

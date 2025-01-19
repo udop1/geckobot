@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
 import { Queue, RepeatMode } from 'distube';
 import { CommandExport } from 'types/CommandTypes';
 import { queueStatus } from 'utils/utils';
@@ -23,13 +23,12 @@ const loopCommand: CommandExport = {
 	sameVoice: true,
 	queueNeeded: true,
 
-	async execute(interaction: ChatInputCommandInteraction, queue: Queue) {
+	async execute(client: Client, interaction: ChatInputCommandInteraction, queue: Queue) {
 		await interaction.deferReply();
 
 		try {
 			const selectedMode = Number(interaction.options.getString('mode'));
 			let mode = queue.setRepeatMode(selectedMode);
-			// const mode = selectedMode ? (selectedMode === 2 ? 'All Queue' : 'This Song') : 'OFF';
 			if (mode) {
 				if (mode === 2) {
 					mode = RepeatMode.QUEUE;

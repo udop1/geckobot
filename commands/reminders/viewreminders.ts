@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import { Client, SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { mysqlConnection } from 'index';
 import { AllReminders, CommandExport } from 'types/CommandTypes';
 
@@ -7,12 +7,7 @@ const viewremindersCommand: CommandExport = {
 		.setName('viewreminders')
 		.setDescription('View all your created reminders'),
 
-	async execute(...args: any) {
-		const interaction: ChatInputCommandInteraction = args.find(
-			(item: any): item is ChatInputCommandInteraction => {
-				return item instanceof ChatInputCommandInteraction;
-			},
-		);
+	async execute(client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 		const messageOwner = interaction.user.id;
 

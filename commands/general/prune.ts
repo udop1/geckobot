@@ -3,6 +3,7 @@ import {
 	PermissionFlagsBits,
 	ChatInputCommandInteraction,
 	MessageFlags,
+	Client,
 } from 'discord.js';
 import { CommandExport } from 'types/CommandTypes';
 
@@ -18,12 +19,7 @@ const pruneCommand: CommandExport = {
 				.setRequired(true),
 		),
 
-	async execute(...args: any) {
-		const interaction: ChatInputCommandInteraction = args.find(
-			(item: any): item is ChatInputCommandInteraction => {
-				return item instanceof ChatInputCommandInteraction;
-			},
-		);
+	async execute(client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 		const amount = interaction.options.getInteger('amount');
