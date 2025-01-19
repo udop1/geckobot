@@ -6,7 +6,12 @@ const serverCommand: CommandExport = {
 		.setName('server')
 		.setDescription('Allows you to get info about the server'),
 
-	async execute(interaction: CommandInteraction) {
+	async execute(...args: any) {
+		const interaction: CommandInteraction = args.find(
+			(item: any): item is CommandInteraction => {
+				return item instanceof CommandInteraction;
+			},
+		);
 		await interaction.deferReply();
 		await interaction.editReply({
 			content: `This server's name is: ${interaction.guild.name}\nTotal Members: ${interaction.guild.memberCount}\nCreated at: ${interaction.guild.createdAt}`,

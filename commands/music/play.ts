@@ -5,6 +5,7 @@ import {
 	ChatInputCommandInteraction,
 	VoiceBasedChannel,
 	GuildMember,
+	MessageFlags,
 } from 'discord.js';
 import { CommandExport } from 'types/CommandTypes';
 
@@ -28,7 +29,7 @@ const playCommand: CommandExport = {
 		interaction: ChatInputCommandInteraction,
 		memberVC: VoiceBasedChannel,
 	) {
-		await interaction.deferReply({ ephemeral: true });
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 		const query = interaction.options.getString('query');
 

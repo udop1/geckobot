@@ -8,6 +8,7 @@ import {
 	SelectMenuComponentOptionData,
 	StringSelectMenuInteraction,
 	GuildMember,
+	MessageFlags,
 } from 'discord.js';
 import { Events, Queue, RepeatMode, Song } from 'distube';
 import { EventExport } from 'types/EventTypes';
@@ -148,7 +149,7 @@ const distubePlaySongEvent: EventExport = {
 
 				return await int.reply({
 					embeds: [inVoiceEmbed],
-					ephemeral: true,
+					flags: MessageFlags.Ephemeral,
 				});
 			}
 

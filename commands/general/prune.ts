@@ -1,4 +1,9 @@
-import { SlashCommandBuilder, PermissionFlagsBits, ChatInputCommandInteraction } from 'discord.js';
+import {
+	SlashCommandBuilder,
+	PermissionFlagsBits,
+	ChatInputCommandInteraction,
+	MessageFlags,
+} from 'discord.js';
 import { CommandExport } from 'types/CommandTypes';
 
 const pruneCommand: CommandExport = {
@@ -13,10 +18,15 @@ const pruneCommand: CommandExport = {
 				.setRequired(true),
 		),
 
-	async execute(interaction: ChatInputCommandInteraction) {
-		await interaction.deferReply({ ephemeral: true });
+	async execute(...args: any) {
+		const interaction: ChatInputCommandInteraction = args.find(
+			(item: any): item is ChatInputCommandInteraction => {
+				return item instanceof ChatInputCommandInteraction;
+			},
+		);
+		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-		const amount = interaction.options.getInteger('number');
+		const amount = interaction.options.getInteger('amount');
 
 		if (isNaN(amount)) {
 			return interaction.editReply({

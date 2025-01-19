@@ -1,13 +1,18 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
 import { mysqlConnection } from 'index';
-import { CommandExport } from 'types/CommandTypes';
+import { AllReleases, CommandExport } from 'types/CommandTypes';
 
 const releasesCommand: CommandExport = {
 	data: new SlashCommandBuilder()
 		.setName('releases')
 		.setDescription('See all movie/TV release dates'),
 
-	async execute(interaction: ChatInputCommandInteraction) {
+	async execute(...args: any) {
+		const interaction: ChatInputCommandInteraction = args.find(
+			(item: any): item is ChatInputCommandInteraction => {
+				return item instanceof ChatInputCommandInteraction;
+			},
+		);
 		await interaction.deferReply();
 
 		try {
@@ -19,7 +24,7 @@ const releasesCommand: CommandExport = {
 
 					const [result] = await (await mysqlConnection).query(getReleasesQuery);
 
-					return result[0];
+					return result;
 				} catch (error) {
 					console.error(`Error fetching all releases: ${error}`);
 
@@ -27,7 +32,7 @@ const releasesCommand: CommandExport = {
 				}
 			};
 
-			const findReleases = await getAllReleases();
+			const findReleases: Array<AllReleases> = await getAllReleases();
 
 			const nthAmount = 10; //How many reminders per page (max per embed: 25)
 			const releaseArrayName = findReleases.map((t: any) => t.release_name);
