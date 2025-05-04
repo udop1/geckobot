@@ -35,14 +35,3 @@ services:
 
 volumes:
     geckobotapp-mysql-data:
-
-x-casaos:
-    author: self
-    category: self
-    hostname: ""
-    icon: ""
-    index: /
-    port_map: "8080"
-    scheme: http
-    title:
-        custom: Gecko Bot

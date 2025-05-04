@@ -3,11 +3,6 @@ const fs = require('fs');
 const path = require('path');
 const MySQL = require('mysql2');
 const { Client, Collection, GatewayIntentBits, REST, Routes } = require('discord.js');
-const { DisTube, isVoiceChannelEmpty } = require('distube');
-const { SpotifyPlugin } = require('@distube/spotify');
-const { YtDlpPlugin } = require('@distube/yt-dlp');
-const { YouTubePlugin } = require('@distube/youtube');
-const { DirectLinkPlugin } = require('@distube/direct-link');
 require('dotenv').config();
 
 //Initialise clients
@@ -17,29 +12,8 @@ const client = new Client({
 		GatewayIntentBits.GuildPresences,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMessageReactions,
-		GatewayIntentBits.GuildVoiceStates,
 		GatewayIntentBits.GuildIntegrations,
 	],
-});
-
-client.distube = new DisTube(client, {
-	plugins: [
-		new SpotifyPlugin(),
-		new YouTubePlugin({
-			ytdlOptions: {
-				quality: 'highestaudio',
-				filter: 'audioonly',
-			},
-		}),
-		new DirectLinkPlugin(),
-		new YtDlpPlugin(),
-	],
-	emitNewSongOnly: false,
-	savePreviousSongs: true,
-	nsfw: false,
-	emitAddListWhenCreatingQueue: true,
-	emitAddSongWhenCreatingQueue: true,
-	joinNewVoiceChannel: false,
 });
 
 client.commands = new Collection();
@@ -103,32 +77,14 @@ module.exports.Routes = Routes;
 const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
 
-client.on('voiceStateUpdate', (oldState) => {
-	if (!oldState?.channel) return;
-
-	const voice = client.distube.voices.get(oldState);
-
-	if (voice && isVoiceChannelEmpty(oldState)) {
-		voice.leave();
-	}
-});
-
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
 	const event = require(filePath);
 
 	if (event.once) {
 		client.once(event.name, (...args) => event.execute(...args));
-
-		if (event.distube) {
-			client.distube.once(event.name, (...args) => event.execute(...args));
-		}
 	} else {
 		client.on(event.name, (...args) => event.execute(...args));
-
-		if (event.distube) {
-			client.distube.on(event.name, (...args) => event.execute(...args));
-		}
 	}
 }
 
