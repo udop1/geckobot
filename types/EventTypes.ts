@@ -1,11 +1,9 @@
 import { Events as DiscordEvents } from 'discord.js';
-import { Events as DistubeEvents } from 'distube';
 
 // Type for exporting events
 export interface EventExport {
-	name: DiscordEvents | DistubeEvents;
+	name: DiscordEvents;
 	once?: boolean;
-	distube?: boolean;
 	execute: any;
 }
 

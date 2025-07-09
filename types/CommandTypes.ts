@@ -6,10 +6,6 @@ import {
 
 export interface CommandExport {
 	data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder;
-	memberVoice?: boolean;
-	botVoice?: boolean;
-	sameVoice?: boolean;
-	queueNeeded?: boolean;
 	execute: any;
 }
 
