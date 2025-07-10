@@ -1,5 +1,5 @@
 import { Client, Events, EmbedBuilder, GuildMember, ChannelType } from 'discord.js';
-import { mysqlConnection } from 'index';
+import { mysqlConnection } from '../index';
 import { EventExport, FinishedReminders } from 'types/EventTypes';
 
 const reminderCheckEvent: EventExport = {
@@ -8,7 +8,7 @@ const reminderCheckEvent: EventExport = {
 	async execute(client: Client) {
 		setInterval(async () => {
 			// Check reminders
-			const getFinishedReminders = async () => {
+			const getFinishedReminders = async (): Promise<FinishedReminders> => {
 				try {
 					const getRemindersQuery = `SELECT reminder_id, username, reminder, start_time, recurrence_time, end_duration, channel_in, message_url, is_recurring
 					FROM tbl_Reminders
@@ -29,7 +29,7 @@ const reminderCheckEvent: EventExport = {
 				}
 			};
 
-			const finishedReminders: FinishedReminders = await getFinishedReminders();
+			const finishedReminders = await getFinishedReminders();
 
 			try {
 				if (!finishedReminders) {

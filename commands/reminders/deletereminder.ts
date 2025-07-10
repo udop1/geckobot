@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
-import { mysqlConnection } from 'index';
+import { mysqlConnection } from '../../index';
 import { CommandExport } from 'types/CommandTypes';
+import { ResultSetHeader } from 'mysql2';
 
 const deletereminderCommand: CommandExport = {
 	data: new SlashCommandBuilder()
@@ -10,7 +11,7 @@ const deletereminderCommand: CommandExport = {
 			option.setName('id').setDescription('Reminder ID').setRequired(true),
 		),
 
-	async execute(client: Client, interaction: ChatInputCommandInteraction) {
+	async execute(_client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 
 		const messageOwner = interaction.user.id;
@@ -22,7 +23,9 @@ const deletereminderCommand: CommandExport = {
 			AND username = ?`;
 			const deleteValues = [reminderID, messageOwner];
 
-			const [result] = await (await mysqlConnection).query(deleteQuery, deleteValues);
+			const [result] = await (
+				await mysqlConnection
+			).query<ResultSetHeader>(deleteQuery, deleteValues);
 
 			if (result.affectedRows == 0) {
 				return interaction.editReply({

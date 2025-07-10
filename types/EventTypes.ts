@@ -1,8 +1,8 @@
-import { Events as DiscordEvents } from 'discord.js';
+import { ClientEvents } from 'discord.js';
 
 // Type for exporting events
 export interface EventExport {
-	name: DiscordEvents;
+	name: keyof ClientEvents;
 	once?: boolean;
 	execute: any;
 }

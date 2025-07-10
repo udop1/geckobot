@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction, Client } from 'discord.js';
-import { mysqlConnection } from 'index';
+import { mysqlConnection } from '../../index';
 import { AllReleases, CommandExport } from 'types/CommandTypes';
 
 const releasesCommand: CommandExport = {
@@ -7,11 +7,11 @@ const releasesCommand: CommandExport = {
 		.setName('releases')
 		.setDescription('See all movie/TV release dates'),
 
-	async execute(client: Client, interaction: ChatInputCommandInteraction) {
+	async execute(_client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 
 		try {
-			const getAllReleases = async () => {
+			const getAllReleases = async (): Promise<Array<AllReleases>> => {
 				try {
 					const getReleasesQuery = `SELECT release_name, release_date, release_date_sort
 					FROM tbl_Releases
@@ -19,7 +19,7 @@ const releasesCommand: CommandExport = {
 
 					const [result] = await (await mysqlConnection).query(getReleasesQuery);
 
-					return result;
+					return result as Array<AllReleases>;
 				} catch (error) {
 					console.error(`Error fetching all releases: ${error}`);
 
@@ -27,11 +27,11 @@ const releasesCommand: CommandExport = {
 				}
 			};
 
-			const findReleases: Array<AllReleases> = await getAllReleases();
+			const findReleases = await getAllReleases();
 
 			const nthAmount = 10; //How many reminders per page (max per embed: 25)
-			const releaseArrayName = findReleases.map((t: any) => t.release_name);
-			const releaseArrayDate = findReleases.map((t: any) => t.release_date);
+			const releaseArrayName = findReleases.map((release) => release.release_name);
+			const releaseArrayDate = findReleases.map((release) => release.release_date);
 
 			const splitArrayName = Array.from(
 				{ length: Math.ceil(releaseArrayName.length / nthAmount) },
@@ -42,7 +42,7 @@ const releasesCommand: CommandExport = {
 				() => releaseArrayDate.splice(0, nthAmount),
 			);
 
-			let embeddedReminder = [];
+			let embeddedReminder: Array<EmbedBuilder> = [];
 			let firstEmbed = true;
 			if (splitArrayName.length > 0) {
 				for (let i = 0; i < splitArrayName.length; i++) {

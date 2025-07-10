@@ -3,7 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
 import MySQL, { Connection, ConnectionOptions } from 'mysql2/promise';
-import { Client, Collection, GatewayIntentBits, REST, Routes } from 'discord.js';
+import {
+	Client,
+	Collection,
+	GatewayIntentBits,
+	REST,
+	RESTPostAPIChatInputApplicationCommandsJSONBody,
+	Routes,
+} from 'discord.js';
 import { CommandModule } from 'types/CommandTypes';
 import { EventModule } from 'types/EventTypes';
 dotenv.config();
@@ -22,7 +29,7 @@ export const client = new Client({
 client.commands = new Collection();
 
 // Retrieve all commands
-const commands = [];
+const commands: Array<RESTPostAPIChatInputApplicationCommandsJSONBody> = [];
 const foldersPath = path.join(__dirname, 'commands');
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -52,12 +59,12 @@ export const rest: REST = new REST().setToken(process.env.TOKEN);
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-		const data = (await rest.put(
+		const response = (await rest.put(
 			Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
 			{ body: commands },
-		)) as any;
+		)) as Array<RESTPostAPIChatInputApplicationCommandsJSONBody>;
 
-		console.log(`Successfully reloaded ${data.length} application (/) commands.`);
+		console.log(`Successfully reloaded ${response.length} application (/) commands.`);
 	} catch (error) {
 		console.error(error);
 	}
@@ -79,7 +86,7 @@ const eventFiles = fs.readdirSync(eventsPath).filter((file) => file.endsWith('.j
 for (const file of eventFiles) {
 	const filePath = path.join(eventsPath, file);
 	const eventModule: EventModule = require(filePath);
-	const event: any = eventModule.default;
+	const event = eventModule.default;
 
 	if (event.once) {
 		client.once(event.name, (...args: any) => event.execute(...args));

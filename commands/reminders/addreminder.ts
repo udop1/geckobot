@@ -1,6 +1,6 @@
 const absoluteResolution = (
 	options: Omit<CommandInteractionOptionResolver<CacheType>, 'getMessage' | 'getFocused'>,
-) => {
+): number => {
 	const timedata = options.getString('time');
 	const datedata = options.getString('date');
 	const currentDate = new Date();
@@ -45,7 +45,7 @@ const absoluteResolution = (
 
 function relativeResolution(
 	timedata: Omit<CommandInteractionOptionResolver<CacheType>, 'getMessage' | 'getFocused'>,
-) {
+): number {
 	const weekInput = timedata.getInteger('week') * 604800;
 	const dayInput = timedata.getInteger('day') * 86400;
 	const hourInput = timedata.getInteger('hour') * 3600;
@@ -73,7 +73,7 @@ function relativeResolution(
 
 function getRecurrenceSum(
 	timedata: Omit<CommandInteractionOptionResolver<CacheType>, 'getMessage' | 'getFocused'>,
-) {
+): number {
 	const weekInput = timedata.getInteger('week') * 604800;
 	const dayInput = timedata.getInteger('day') * 86400;
 	const hourInput = timedata.getInteger('hour') * 3600;
@@ -88,7 +88,7 @@ function getRecurrenceSum(
 	return relativeSum;
 }
 
-function generateMessage(endTime: number) {
+function generateMessage(endTime: number): string {
 	const dateObject = new Date(endTime * 1000);
 	const endMonths = [
 		'January',
@@ -121,7 +121,7 @@ import {
 	CacheType,
 	MessageFlags,
 } from 'discord.js';
-import { mysqlConnection } from 'index';
+import { mysqlConnection } from '../../index';
 import { CommandExport } from 'types/CommandTypes';
 
 const addreminderCommand: CommandExport = {
@@ -180,7 +180,7 @@ const addreminderCommand: CommandExport = {
 				),
 		),
 
-	async execute(client: Client, interaction: ChatInputCommandInteraction) {
+	async execute(_client: Client, interaction: ChatInputCommandInteraction) {
 		const startTime = Math.trunc(new Date().getTime() / 1000);
 		const channelIn = interaction.channel.id;
 		const reminder = interaction.options.getString('message');

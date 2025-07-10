@@ -1,5 +1,5 @@
 import { Client, SlashCommandBuilder, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
-import { mysqlConnection } from 'index';
+import { mysqlConnection } from '../../index';
 import { AllReminders, CommandExport } from 'types/CommandTypes';
 
 const viewremindersCommand: CommandExport = {
@@ -7,12 +7,12 @@ const viewremindersCommand: CommandExport = {
 		.setName('viewreminders')
 		.setDescription('View all your created reminders'),
 
-	async execute(client: Client, interaction: ChatInputCommandInteraction) {
+	async execute(_client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply();
 		const messageOwner = interaction.user.id;
 
 		try {
-			const getAllReminders = async () => {
+			const getAllReminders = async (): Promise<Array<AllReminders>> => {
 				try {
 					const getRemindersQuery = `SELECT reminder_id, reminder, start_time, end_duration, message_url, is_recurring
 					FROM tbl_Reminders
@@ -24,22 +24,22 @@ const viewremindersCommand: CommandExport = {
 						await mysqlConnection
 					).query(getRemindersQuery, getRemindersValues);
 
-					return result;
+					return result as Array<AllReminders>;
 				} catch (error) {
 					console.error(`Error fetching reminders: ${error}`);
 
 					throw error;
 				}
 			};
-			const findReminders: Array<AllReminders> = await getAllReminders();
+			const findReminders = await getAllReminders();
 
 			const nthAmount = 9; //How many reminders per page (max per embed: 25)
-			const reminderArrayID = findReminders.map((t: any) => t.reminder_id);
-			const reminderArrayReminder = findReminders.map((t: any) => t.reminder);
-			const reminderArrayStart = findReminders.map((t: any) => t.start_time);
-			const reminderArrayEnd = findReminders.map((t: any) => t.end_duration);
-			const reminderArrayURL = findReminders.map((t: any) => t.message_url);
-			const reminderArrayRecurring = findReminders.map((t: any) => t.is_recurring);
+			const reminderArrayID = findReminders.map((reminder) => reminder.reminder_id);
+			const reminderArrayReminder = findReminders.map((reminder) => reminder.reminder);
+			const reminderArrayStart = findReminders.map((reminder) => reminder.start_time);
+			const reminderArrayEnd = findReminders.map((reminder) => reminder.end_duration);
+			const reminderArrayURL = findReminders.map((reminder) => reminder.message_url);
+			const reminderArrayRecurring = findReminders.map((reminder) => reminder.is_recurring);
 
 			const splitArrayID = Array.from(
 				{ length: Math.ceil(reminderArrayID.length / nthAmount) },

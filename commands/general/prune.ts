@@ -19,7 +19,7 @@ const pruneCommand: CommandExport = {
 				.setRequired(true),
 		),
 
-	async execute(client: Client, interaction: ChatInputCommandInteraction) {
+	async execute(_client: Client, interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
 		const amount = interaction.options.getInteger('amount');
