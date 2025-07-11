@@ -2,7 +2,7 @@
 import fs from 'fs';
 import path from 'path';
 import dotenv from 'dotenv';
-import MySQL, { Connection, ConnectionOptions } from 'mysql2/promise';
+import MySQL, { ConnectionOptions } from 'mysql2/promise';
 import {
 	Client,
 	Collection,
@@ -77,7 +77,7 @@ const mysqlOptions: ConnectionOptions = {
 	password: `${process.env.PASSWORD}`,
 	database: `${process.env.DATABASE}`,
 };
-export const mysqlConnection: Promise<Connection> = MySQL.createConnection(mysqlOptions);
+export const mysqlConnection = MySQL.createConnection(mysqlOptions);
 
 // Event handlers
 const eventsPath = path.join(__dirname, 'events');

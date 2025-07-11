@@ -18,6 +18,7 @@
 	},
 	"homepage": "https://github.com/udop1/geckobot#readme",
 	"dependencies": {
+		"dayjs": "^1.11.13",
 		"discord.js": "^14.19.3",
 		"dotenv": "^16.5.0",
 		"mysql2": "^3.14.1",
