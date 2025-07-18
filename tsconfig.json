@@ -1,0 +1,24 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"target": "ES6",
+		"module": "Node16",
+		"moduleResolution": "node16",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"newLine": "lf",
+		"outDir": "./dist",
+		"strict": true,
+		"skipLibCheck": true,
+		"paths": {
+			"*": ["node_modules/*"],
+			"index": ["dist/index.js"],
+			"types/*": ["types/*"],
+			"utils/*": ["dist/utils/*.js"]
+		},
+		"types": ["node"]
+	},
+	"files": ["index.ts"],
+	"include": ["commands/**/*", "events/**/*", "types/**/*", "utils/**/*"],
+	"exclude": ["dist/**/*", "node_modules/**/*"]
+}

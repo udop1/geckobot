@@ -2,8 +2,9 @@
 	"name": "geckobot",
 	"version": "1.0.0",
 	"description": "This is a Discord.js bot that was created for my Discord server",
-	"main": "index.js",
+	"main": "dist/index.js",
 	"scripts": {
+		"start": "tsc --project ./tsconfig.json && node -r tsconfig-paths/register dist/index.js",
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},
 	"repository": {
@@ -19,9 +20,12 @@
 	"dependencies": {
 		"discord.js": "^14.19.3",
 		"dotenv": "^16.5.0",
-		"mysql2": "^3.14.1"
+		"mysql2": "^3.14.1",
+		"tsconfig-paths": "^4.2.0"
 	},
 	"devDependencies": {
-		"eslint": "^9.26.0"
+		"eslint": "^9.26.0",
+		"prettier": "^3.4.2",
+		"typescript": "^5.7.3"
 	}
 }
