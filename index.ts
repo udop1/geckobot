@@ -13,6 +13,7 @@ import {
 } from 'discord.js';
 import { CommandModule } from 'types/CommandTypes';
 import { EventModule } from 'types/EventTypes';
+import { checkEnv } from './utils/utils';
 dotenv.config();
 
 // Initialise clients
@@ -54,13 +55,13 @@ for (const folder of commandFolders) {
 }
 
 // Update all commands
-export const rest: REST = new REST().setToken(process.env.TOKEN);
+const rest: REST = new REST().setToken(checkEnv('TOKEN'));
 (async () => {
 	try {
 		console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
 		const response = (await rest.put(
-			Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID),
+			Routes.applicationGuildCommands(checkEnv('CLIENT_ID'), checkEnv('GUILD_ID')),
 			{ body: commands },
 		)) as Array<RESTPostAPIChatInputApplicationCommandsJSONBody>;
 

@@ -8,7 +8,7 @@
 		"allowSyntheticDefaultImports": true,
 		"newLine": "lf",
 		"outDir": "./dist",
-		"strict": false,
+		"strict": true,
 		"skipLibCheck": true,
 		"paths": {
 			"*": ["node_modules/*"],

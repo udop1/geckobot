@@ -1,3 +1,7 @@
-export const numberWithCommas = (number: number) => {
-	return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+export const checkEnv = (name: string): string => {
+	if (typeof process.env[name] === 'undefined') {
+		throw new Error(`Environment variable '${name}' is undefined.`);
+	}
+
+	return process.env[name];
 };

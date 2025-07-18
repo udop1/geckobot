@@ -1,4 +1,5 @@
 import { ClientEvents } from 'discord.js';
+import { RowDataPacket } from 'mysql2';
 
 // Type for exporting events
 export interface EventExport {
@@ -12,7 +13,7 @@ export interface EventModule {
 }
 
 // Type for finished reminders
-export interface FinishedReminders {
+export interface FinishedReminders extends RowDataPacket {
 	reminder_id: number;
 	username: string;
 	reminder: string;

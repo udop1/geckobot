@@ -9,7 +9,7 @@ const serverCommand: CommandExport = {
 	async execute(_client: Client, interaction: CommandInteraction) {
 		await interaction.deferReply();
 		await interaction.editReply({
-			content: `This server's name is: ${interaction.guild.name}\nTotal Members: ${interaction.guild.memberCount}\nCreated at: ${interaction.guild.createdAt}`,
+			content: `This server's name is: ${interaction.guild?.name}\nTotal Members: ${interaction.guild?.memberCount}\nCreated at: ${interaction.guild?.createdAt}`,
 		});
 	},
 };

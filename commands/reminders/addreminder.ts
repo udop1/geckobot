@@ -1,8 +1,8 @@
 const absoluteResolution = (
 	options: Omit<CommandInteractionOptionResolver<CacheType>, 'getMessage' | 'getFocused'>,
 ): number => {
-	const timedata = options.getString('time');
-	const datedata = options.getString('date');
+	const timedata = options.getString('time', true);
+	const datedata = options.getString('date', true);
 	const currentDate = new Date();
 	const now = new Date(currentDate.getTime());
 
@@ -46,11 +46,11 @@ const absoluteResolution = (
 function relativeResolution(
 	timedata: Omit<CommandInteractionOptionResolver<CacheType>, 'getMessage' | 'getFocused'>,
 ): number {
-	const weekInput = timedata.getInteger('week') * 604800;
-	const dayInput = timedata.getInteger('day') * 86400;
-	const hourInput = timedata.getInteger('hour') * 3600;
-	const minuteInput = timedata.getInteger('minute') * 60;
-	const secondInput = timedata.getInteger('second');
+	const weekInput = (timedata.getInteger('week') ?? 0) * 604800;
+	const dayInput = (timedata.getInteger('day') ?? 0) * 86400;
+	const hourInput = (timedata.getInteger('hour') ?? 0) * 3600;
+	const minuteInput = (timedata.getInteger('minute') ?? 0) * 60;
+	const secondInput = timedata.getInteger('second') ?? 0;
 	const relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
 
 	const startTime = Math.trunc(new Date().getTime() / 1000);
@@ -74,11 +74,11 @@ function relativeResolution(
 function getRecurrenceSum(
 	timedata: Omit<CommandInteractionOptionResolver<CacheType>, 'getMessage' | 'getFocused'>,
 ): number {
-	const weekInput = timedata.getInteger('week') * 604800;
-	const dayInput = timedata.getInteger('day') * 86400;
-	const hourInput = timedata.getInteger('hour') * 3600;
-	const minuteInput = timedata.getInteger('minute') * 60;
-	const secondInput = timedata.getInteger('second');
+	const weekInput = (timedata.getInteger('week') ?? 0) * 604800;
+	const dayInput = (timedata.getInteger('day') ?? 0) * 86400;
+	const hourInput = (timedata.getInteger('hour') ?? 0) * 3600;
+	const minuteInput = (timedata.getInteger('minute') ?? 0) * 60;
+	const secondInput = timedata.getInteger('second') ?? 0;
 	const relativedata = [weekInput, dayInput, hourInput, minuteInput, secondInput];
 
 	let relativeSum = 0;
@@ -182,10 +182,11 @@ const addreminderCommand: CommandExport = {
 
 	async execute(_client: Client, interaction: ChatInputCommandInteraction) {
 		const startTime = Math.trunc(new Date().getTime() / 1000);
-		const channelIn = interaction.channel.id;
+		const channelIn = interaction.channel?.id;
 		const reminder = interaction.options.getString('message');
 
-		let endTime: number, recurrenceSum: number;
+		let endTime: number = NaN,
+			recurrenceSum: number = NaN;
 		if (interaction.options.getSubcommand() === 'absolute') {
 			endTime = absoluteResolution(interaction.options);
 			recurrenceSum = endTime - startTime;

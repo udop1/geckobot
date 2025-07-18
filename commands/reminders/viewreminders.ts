@@ -67,7 +67,10 @@ const viewremindersCommand: CommandExport = {
 			);
 			console.log(splitArrayID);
 			const reminderUser = interaction.client.users.cache.get(messageOwner);
-			const reminderGuildUser = interaction.guild.members.cache.get(messageOwner);
+			const reminderGuildUser = interaction.guild?.members.cache.get(messageOwner);
+
+			const username = reminderUser?.username ?? 'Unknown User';
+			const displayName = reminderGuildUser?.displayName;
 
 			let embeddedReminder: Array<EmbedBuilder> = [];
 			let firstEmbed = true;
@@ -77,11 +80,8 @@ const viewremindersCommand: CommandExport = {
 					embeddedReminder[i].setColor('#0099ff');
 					embeddedReminder[i].setTitle('Your Reminders:');
 					embeddedReminder[i].setAuthor({
-						name:
-							reminderGuildUser.displayName === reminderUser.username
-								? reminderUser.username
-								: `${reminderGuildUser.displayName} (${reminderUser.username})`,
-						iconURL: reminderUser.displayAvatarURL(),
+						name: displayName === username ? username : `${displayName} (${username})`,
+						iconURL: reminderUser?.displayAvatarURL(),
 					});
 					embeddedReminder[i].setFooter({ text: `Page ${i + 1}` });
 					embeddedReminder[i].setTimestamp();

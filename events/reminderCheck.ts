@@ -19,7 +19,7 @@ const reminderCheckEvent: EventExport = {
 
 					const [result] = await (
 						await mysqlConnection
-					).query(getRemindersQuery, [currentTime]);
+					).execute<FinishedReminders[]>(getRemindersQuery, [currentTime]);
 
 					return result[0];
 				} catch (error) {
@@ -36,7 +36,7 @@ const reminderCheckEvent: EventExport = {
 					return;
 				}
 				const reminderUser = await client.users.fetch(finishedReminders.username);
-				let reminderGuildUser: GuildMember;
+				let reminderGuildUser: GuildMember | undefined;
 				client.guilds.cache.forEach((guild) => {
 					guild.members.cache.find((member) => {
 						if (member.user.id === finishedReminders.username) {
@@ -79,9 +79,9 @@ const reminderCheckEvent: EventExport = {
 						.setColor('#0099ff')
 						.setAuthor({
 							name:
-								reminderGuildUser.displayName === reminderUser.username
+								reminderGuildUser?.displayName === reminderUser.username
 									? reminderUser.username
-									: `${reminderGuildUser.displayName} (${reminderUser.username})`,
+									: `${reminderGuildUser?.displayName} (${reminderUser.username})`,
 							iconURL: reminderUser.displayAvatarURL(),
 						})
 						.addFields(
@@ -98,7 +98,7 @@ const reminderCheckEvent: EventExport = {
 						.setTimestamp(Date.parse(time));
 
 					const channel = client.channels.cache.get(finishedReminders.channel_in);
-					if (channel.type === ChannelType.GuildText) {
+					if (channel?.type === ChannelType.GuildText) {
 						channel.send({
 							content: `<@${finishedReminders.username}>,\n`,
 							embeds: [embedReminder] /*, components: [buttonRow]*/,
@@ -121,9 +121,9 @@ const reminderCheckEvent: EventExport = {
 						.setColor('#0099ff')
 						.setAuthor({
 							name:
-								reminderGuildUser.displayName === reminderUser.username
+								reminderGuildUser?.displayName === reminderUser.username
 									? reminderUser.username
-									: `${reminderGuildUser.displayName} (${reminderUser.username})`,
+									: `${reminderGuildUser?.displayName} (${reminderUser.username})`,
 							iconURL: reminderUser.displayAvatarURL(),
 						})
 						.addFields(
@@ -140,7 +140,7 @@ const reminderCheckEvent: EventExport = {
 						.setTimestamp(Date.parse(time));
 
 					const channel = client.channels.cache.get(finishedReminders.channel_in);
-					if (channel.type === ChannelType.GuildText) {
+					if (channel?.type === ChannelType.GuildText) {
 						channel.send({
 							content: `<@${finishedReminders.username}>,\n`,
 							embeds: [embedReminder],

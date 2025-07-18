@@ -9,19 +9,19 @@ const interactionCreateEvent: EventExport = {
 		const interaction = args.find((item: CommandInteraction): item is CommandInteraction => {
 			return item instanceof CommandInteraction;
 		});
-		const client = interaction.client;
+		const client = interaction?.client;
 
-		const command: CommandExport = interaction.client.commands.get(interaction.commandName);
+		const command: CommandExport = client?.commands.get(interaction?.commandName);
 
 		if (!command) {
-			console.error(`No command matching ${interaction.commandName} was found.`);
+			console.error(`No command matching ${interaction?.commandName} was found.`);
 			return;
 		}
 
 		try {
 			await command.execute(client, interaction);
 		} catch (error) {
-			console.error(`Error executing ${interaction.commandName}:\n${error}`);
+			console.error(`Error executing ${interaction?.commandName}:\n${error}`);
 		}
 	},
 };
