@@ -3,6 +3,7 @@ import {
 	SlashCommandOptionsOnlyBuilder,
 	SlashCommandSubcommandsOnlyBuilder,
 } from 'discord.js';
+import { RowDataPacket } from 'mysql2';
 
 export interface CommandExport {
 	data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder;
@@ -13,17 +14,18 @@ export interface CommandModule {
 	default: CommandExport;
 }
 
-export interface AllReminders {
-	reminder_id: number;
-	reminder: string;
-	start_time: number;
-	end_duration: number;
-	message_url: string;
-	is_recurring: string;
+export interface SelectViewReminders extends RowDataPacket {
+	id: number;
+	message: string;
+	createdAt: number;
+	remindAt: number;
+	repeatInterval?: number | null;
+	messageUrl: string;
 }
 
-export interface AllReleases {
-	release_name: string;
-	release_date: string;
-	release_date_sort: string;
+export interface SelectDeleteReminder extends RowDataPacket {
+	id: number;
+	message: string;
+	remindAt: number;
+	repeatInterval?: number | null;
 }
