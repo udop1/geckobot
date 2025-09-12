@@ -95,7 +95,7 @@ const createReminder: CommandExport = {
 
 			if (result.affectedRows > 0) {
 				return await interaction.editReply({
-					content: `Your reminder for ${time(remindAt, TimestampStyles.LongDateTime)}${repeatInterval ? ` that repeats ${time(Math.floor(new Date().getTime() / 1000 + repeatInterval), TimestampStyles.RelativeTime)}` : ''} has been set.`,
+					content: `Your reminder for ${time(remindAt, TimestampStyles.LongDateTime)}${repeatInterval ? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.LongDateTime)},` : ''} has been set.`,
 				});
 			} else {
 				console.error('Failed to insert reminder to database.');

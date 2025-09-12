@@ -59,7 +59,7 @@ const viewReminders: CommandExport = {
 			for (const reminder of page) {
 				embed.addFields({
 					name: `ID: ${reminder.id}`,
-					value: `Reminder: ${reminder.message}\nCreated: ${time(reminder.createdAt, TimestampStyles.LongDateTime)}\n${reminder.repeatInterval ? 'Next' : 'Ending'}: ${time(reminder.remindAt, TimestampStyles.LongDateTime)}\n${reminder.repeatInterval ? `Repeats ${time(Math.floor(new Date().getTime() / 1000 + reminder.repeatInterval), TimestampStyles.RelativeTime)}\n` : ''}**[Original Message](${reminder.messageUrl})**`,
+					value: `Reminder: ${reminder.message}\nCreated: ${time(reminder.createdAt, TimestampStyles.LongDateTime)}\n${reminder.repeatInterval ? 'Next' : 'Ending'}: ${time(reminder.remindAt, TimestampStyles.LongDateTime)}\n${reminder.repeatInterval ? `Next repeat: ${time(reminder.repeatInterval + reminder.remindAt, TimestampStyles.LongDateTime)}\n` : ''}**[Original Message](${reminder.messageUrl})**`,
 					inline: true,
 				});
 			}
