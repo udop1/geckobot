@@ -17,7 +17,7 @@ export const parseDate = (input: string): number => {
 	if (pieces.length > 0) {
 		const seconds = parseDuration(input);
 
-		return Math.floor(new Date().getTime() / 1000 + seconds);
+		return Math.floor(Date.now() / 1000 + seconds);
 	}
 
 	// Absolute, common formats
