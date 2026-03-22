@@ -8,6 +8,7 @@ import {
 } from 'discord.js';
 import { mysqlConnection } from '../../index';
 import { parseDate, parseDuration } from '../../utils/utils';
+import config from '../../config.json';
 import { CommandExport } from 'types/CommandTypes';
 import { ResultSetHeader } from 'mysql2';
 import dayjs from 'dayjs';
@@ -37,12 +38,7 @@ const createReminder: CommandExport = {
 				.setName('timezone')
 				.setDescription('Optional: specific timezone')
 				.setRequired(false)
-				.addChoices(
-					{ name: 'EST', value: 'America/New_York' },
-					{ name: 'CST', value: 'America/Chicago' },
-					{ name: 'MST', value: 'America/Denver' },
-					{ name: 'PST', value: 'America/Los_Angeles' },
-				),
+				.addChoices(config.timezones),
 		)
 		.addStringOption((option) =>
 			option
@@ -121,8 +117,15 @@ const createReminder: CommandExport = {
 			);
 
 			if (result.affectedRows > 0) {
+				const repeatMsg = repeatInterval
+					? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.FullDateShortTime)},`
+					: '';
+				const timezoneMsg = timezoneInput
+					? ` converted from \`${config.timezones.find((timezone) => timezone.value === timezoneInput)?.name}\``
+					: '';
+
 				return await interaction.editReply({
-					content: `Your reminder for ${time(remindAt, TimestampStyles.FullDateShortTime)}${repeatInterval ? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.FullDateShortTime)},` : ''} has been set.`,
+					content: `Your reminder for ${time(remindAt, TimestampStyles.FullDateShortTime)}${timezoneMsg}${repeatMsg} has been set.`,
 				});
 			} else {
 				console.error('Failed to insert reminder to database.');

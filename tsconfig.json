@@ -5,6 +5,7 @@
 		"module": "Node16",
 		"moduleResolution": "node16",
 		"esModuleInterop": true,
+		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,
 		"newLine": "lf",
 		"outDir": "./dist",
