@@ -72,7 +72,7 @@ const createReminder: CommandExport = {
 
 		// Parse timezone
 		if (timezoneInput) {
-			const givenDate = dayjs.tz(dayjs.unix(remindAt), timezoneInput);
+			const givenDate = dayjs(dayjs.unix(remindAt)).tz(timezoneInput, true);
 			const convertedDate = givenDate.tz(dayjs.tz.guess());
 
 			remindAt = convertedDate.unix();
@@ -122,7 +122,7 @@ const createReminder: CommandExport = {
 
 			if (result.affectedRows > 0) {
 				return await interaction.editReply({
-					content: `Your reminder for ${time(remindAt, TimestampStyles.LongDateTime)}${repeatInterval ? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.LongDateTime)},` : ''} has been set.`,
+					content: `Your reminder for ${time(remindAt, TimestampStyles.FullDateShortTime)}${repeatInterval ? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.FullDateShortTime)},` : ''} has been set.`,
 				});
 			} else {
 				console.error('Failed to insert reminder to database.');
