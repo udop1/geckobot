@@ -1,10 +1,10 @@
-import { TextChannel } from 'discord.js';
 import {
 	SlashCommandBuilder,
 	PermissionFlagsBits,
 	ChatInputCommandInteraction,
 	MessageFlags,
 	Client,
+	TextChannel,
 } from 'discord.js';
 import { CommandExport } from 'types/CommandTypes';
 
@@ -25,7 +25,7 @@ const pruneCommand: CommandExport = {
 
 		const amount = interaction.options.getInteger('amount');
 
-		if (amount === null || isNaN(amount)) {
+		if (amount === null || Number.isNaN(amount)) {
 			return interaction.editReply({
 				content: "That doesn't seem to be a valid number.",
 			});

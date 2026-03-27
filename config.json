@@ -1,0 +1,8 @@
+{
+	"timezones": [
+		{ "name": "EST", "value": "America/New_York" },
+		{ "name": "CST", "value": "America/Chicago" },
+		{ "name": "MST", "value": "America/Denver" },
+		{ "name": "PST", "value": "America/Los_Angeles" }
+	]
+}

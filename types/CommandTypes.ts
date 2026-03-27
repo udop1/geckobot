@@ -8,6 +8,7 @@ import { RowDataPacket } from 'mysql2';
 export interface CommandExport {
 	data: SlashCommandBuilder | SlashCommandOptionsOnlyBuilder | SlashCommandSubcommandsOnlyBuilder;
 	execute: any;
+	autocomplete?: any;
 }
 
 export interface CommandModule {

@@ -5,11 +5,13 @@
 		"module": "Node16",
 		"moduleResolution": "node16",
 		"esModuleInterop": true,
+		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,
 		"newLine": "lf",
 		"outDir": "./dist",
 		"strict": true,
 		"skipLibCheck": true,
+		"lib": ["ES2022.Intl"],
 		"paths": {
 			"*": ["node_modules/*"],
 			"index": ["dist/index.js"],

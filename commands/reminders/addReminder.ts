@@ -8,8 +8,15 @@ import {
 } from 'discord.js';
 import { mysqlConnection } from '../../index';
 import { parseDate, parseDuration } from '../../utils/utils';
+import config from '../../config.json';
 import { CommandExport } from 'types/CommandTypes';
 import { ResultSetHeader } from 'mysql2';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const createReminder: CommandExport = {
 	data: new SlashCommandBuilder()
@@ -28,6 +35,13 @@ const createReminder: CommandExport = {
 		)
 		.addStringOption((option) =>
 			option
+				.setName('timezone')
+				.setDescription('Optional: specific timezone')
+				.setRequired(false)
+				.addChoices(config.timezones),
+		)
+		.addStringOption((option) =>
+			option
 				.setName('repeat')
 				.setDescription('Optional: repeat interval (e.g. `1d 2h`)')
 				.setRequired(false),
@@ -38,9 +52,10 @@ const createReminder: CommandExport = {
 		const channelId = interaction.channelId;
 		const message = interaction.options.getString('message', true);
 		const whenInput = interaction.options.getString('when', true);
+		const timezoneInput = interaction.options.getString('timezone', false);
 		const repeatInput = interaction.options.getString('repeat', false);
 
-		// Parse `whenInput`
+		// Parse whenInput
 		let remindAt: number;
 		try {
 			remindAt = parseDate(whenInput);
@@ -49,6 +64,14 @@ const createReminder: CommandExport = {
 				content: 'Could not parse the date/time. Please use a valid format.',
 				flags: MessageFlags.Ephemeral,
 			});
+		}
+
+		// Parse timezone
+		if (timezoneInput) {
+			const givenDate = dayjs(dayjs.unix(remindAt)).tz(timezoneInput, true);
+			const convertedDate = givenDate.tz(dayjs.tz.guess());
+
+			remindAt = convertedDate.unix();
 		}
 
 		// Parse repeatInput
@@ -88,14 +111,21 @@ const createReminder: CommandExport = {
 					message,
 					remindAt,
 					repeatInterval,
-					Math.floor(new Date().getTime() / 1000),
+					Math.floor(Date.now() / 1000),
 					messageUrl,
 				],
 			);
 
 			if (result.affectedRows > 0) {
+				const repeatMsg = repeatInterval
+					? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.FullDateShortTime)},`
+					: '';
+				const timezoneMsg = timezoneInput
+					? ` converted from \`${config.timezones.find((timezone) => timezone.value === timezoneInput)?.name}\``
+					: '';
+
 				return await interaction.editReply({
-					content: `Your reminder for ${time(remindAt, TimestampStyles.LongDateTime)}${repeatInterval ? `, that will next repeat on ${time(repeatInterval + remindAt, TimestampStyles.LongDateTime)},` : ''} has been set.`,
+					content: `Your reminder for ${time(remindAt, TimestampStyles.FullDateShortTime)}${timezoneMsg}${repeatMsg} has been set.`,
 				});
 			} else {
 				console.error('Failed to insert reminder to database.');
